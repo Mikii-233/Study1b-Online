@@ -325,28 +325,48 @@
       background:var(--panel);
       border:1px solid #4b4b56;
       border-radius:13px;
-      display:grid;
-      grid-template-columns:112px 1fr;
-      gap:18px;
-      padding:14px 20px;
+      display:flex;
+      flex-direction:column;
+      padding:11px 18px 13px;
       box-sizing:border-box;
+    }
+    .assistant-badge {
+      font-size:clamp(15px,1.25vw,20px);
+      font-weight:900;
+      color:white;
+      text-align:center;
+      margin-bottom:7px;
+      flex:0 0 auto;
+    }
+    .assistant-info-main {
+      width:100%;
+      min-width:0;
+      flex:1 1 auto;
+      display:grid;
+      grid-template-columns:148px minmax(0,1fr);
+      gap:18px;
       align-items:center;
     }
-    .assistant-info-card .avatar-box { width:104px; height:104px; }
-    .assistant-info-right { min-width:0; }
-    .assistant-badge { font-size:clamp(15px,1.25vw,20px); font-weight:900; color:white; margin-bottom:8px; }
-    .formal-state-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
-    .formal-state-label { font-size:clamp(14px,1vw,18px); font-weight:900; }
-    .formal-text {
-      background:#20212a;
-      border:1px solid #484954;
-      border-radius:9px;
-      padding:10px 13px;
-      font-size:clamp(14px,1.08vw,19px);
-      line-height:1.55;
-      color:#f0f0f0;
-      overflow-wrap:anywhere;
+    .assistant-left-stack {
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
     }
+    .formal-state-row {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      margin:0;
+    }
+    .formal-state-label { font-size:clamp(14px,1vw,18px); font-weight:900; text-align:center; }
+    .assistant-info-card .avatar-box { width:92px; height:92px; }
+    .assistant-prompt-wrap { min-width:0; display:flex; align-items:center; height:100%; }
+    .prompt-inline-label { font-weight:900; color:#dce6f0; }
 
     .rating-zone {
       flex:1 1 27%;
@@ -440,18 +460,6 @@
 
 
     /* ---------- 助手提示气泡 ---------- */
-    .assistant-prompt-label {
-      display:inline-block;
-      margin:0 0 5px 12px;
-      padding:3px 9px;
-      border-radius:999px;
-      background:#343746;
-      border:1px solid #565b69;
-      color:#dce6f0;
-      font-size:12px;
-      font-weight:800;
-      letter-spacing:.5px;
-    }
     .speech-bubble {
       position:relative;
       background:#20212a;
@@ -503,8 +511,9 @@
       .assistant-intro-card { grid-template-columns:76px 1fr; padding:12px; }
       .avatar-box { width:72px; height:72px; }
       .energy-cell { width:43px; height:18px; }
-      .assistant-info-card { width:96vw; grid-template-columns:96px 1fr; gap:12px; padding:11px 14px; }
-      .assistant-info-card .avatar-box { width:88px; height:88px; }
+      .assistant-info-card { width:96vw; padding:10px 14px 12px; }
+      .assistant-info-main { grid-template-columns:132px minmax(0,1fr); gap:12px; }
+      .assistant-info-card .avatar-box { width:82px; height:82px; }
       .rating-options { gap:8px; }
     }
 
@@ -561,20 +570,18 @@
         height:calc(100% - 2px);
         min-height:192px;
         max-height:none;
-        grid-template-columns:68px 1fr;
-        gap:8px;
-        padding:8px 9px;
+        padding:7px 8px 9px;
         border-radius:10px;
       }
-      .assistant-info-card .avatar-box { width:64px; height:64px; border-radius:10px; }
       .assistant-badge { font-size:13px; margin-bottom:5px; }
-      .formal-state-row { gap:7px; margin-bottom:6px; }
+      .assistant-info-main { grid-template-columns:92px minmax(0,1fr); gap:10px; align-items:center; }
+      .assistant-left-stack { gap:6px; }
+      .formal-state-row { gap:4px; margin:0; }
       .formal-state-label { font-size:12px; }
       .assistant-info-card .energy-cell { width:31px; height:13px; }
-      .formal-text { padding:7px 8px; font-size:12.5px; line-height:1.42; }
-      .assistant-prompt-label { margin:0 0 3px 8px; padding:2px 7px; font-size:10.5px; }
-      .speech-bubble { padding:7px 8px; font-size:12.5px; line-height:1.42; border-radius:9px; }
-      .speech-bubble::before { left:-7px; top:15px; width:12px; height:12px; }
+      .assistant-info-card .avatar-box { width:62px; height:62px; border-radius:10px; }
+      .speech-bubble { padding:8px 9px; font-size:12.5px; line-height:1.45; border-radius:9px; }
+      .speech-bubble::before { left:-7px; top:26px; width:12px; height:12px; }
 
 
       .rating-zone { flex:1 0 30%; min-height:176px; padding:6px 5px calc(6px + env(safe-area-inset-bottom)); }
@@ -618,7 +625,6 @@
     <input id="subject-id-input" class="login-input" type="text" placeholder="例如：001" maxlength="30" autocomplete="off">
     <br>
     <button id="login-btn" class="login-btn">进入体验</button>
-    <div class="dev-note" style="margin-top:16px;margin-bottom:0;">正式风险组不会由被试选择：系统通过 DataPipe 的两个 condition 自动平衡分配至低风险或高风险条件。</div>
   </div>
 </div>
 
@@ -626,7 +632,7 @@
 
 <script>
   /* =========================================================
-     实验1b 成人版正式候选版
+     实验1b 成人版正式候选版 v2
      ---------------------------------------------------------
      核心框架：jsPsych
      数据传输：DataPipe -> OSF
@@ -1143,15 +1149,18 @@
     const cfg=trialData.config;
     const who=isFormal?`智驾助手 ${trialData.assistantLabel}`:'练习助手';
     return `<div class="assistant-info-card">
-      ${avatarHTML()}
-      <div class="assistant-info-right">
-        <div class="assistant-badge">${who}</div>
-        <div class="formal-state-row">
-          <div class="formal-state-label ${stateColorClass(cfg)}">${stateLabel(cfg)}</div>
-          ${makeEnergyBars(cfg.levelNumeric,cfg.dimension)}
+      <div class="assistant-badge">${who}</div>
+      <div class="assistant-info-main">
+        <div class="assistant-left-stack">
+          <div class="formal-state-row">
+            <div class="formal-state-label ${stateColorClass(cfg)}">${stateLabel(cfg)}</div>
+            ${makeEnergyBars(cfg.levelNumeric,cfg.dimension)}
+          </div>
+          ${avatarHTML()}
         </div>
-        <div class="assistant-prompt-label">助手提示</div>
-        <div class="speech-bubble">${trialData.manipulationText}</div>
+        <div class="assistant-prompt-wrap">
+          <div class="speech-bubble"><span class="prompt-inline-label">助手提示：</span>${trialData.manipulationText}</div>
+        </div>
       </div>
     </div>`;
   }
@@ -1175,13 +1184,13 @@
       stimulus:`<div class="fullscreen-container">
         <div class="guide-box">
           <div class="guide-title">欢迎参加智驾乘车体验</div>
-          <div class="context-box">请想象您是一名乘客，正坐在一辆<span class="highlight">无人智驾车辆的后排</span>。接下来您会查看不同的道路场景，并了解负责当前路段驾驶的智驾助手，请根据自己的真实感受完成评价。</div>
+          <div class="context-box">请想象您是一名乘客，正坐在一辆<span class="highlight">无人智驾车辆的后排</span>。乘车过程中，您将通过<span class="highlight">前排平板屏幕</span>了解当前道路场景以及智驾助手提供的信息，并根据自己的真实感受完成评价。</div>
+          智驾助手主要包含两类属性：<span class="ability-text">能力属性</span>和<span class="emotion-text">情感属性</span>。在后续页面中，您会看到相应的状态能量格，以及当前智驾助手提供的<span class="highlight">“助手提示”</span>。<br><br>
           <b>本次体验包含四个环节：</b><br>
           ① 完成一次点数分配任务；<br>
           ② 了解四款智驾助手及能量条含义；<br>
           ③ 完成练习，熟悉页面与操作方式；<br>
-          ④ 完成正式驾驶体验。<br><br>
-          <span style="color:var(--muted);font-size:16px;">在驾驶页面中，您还会看到当前智驾助手提供的<span class="highlight">“助手提示”</span>。提示信息反映该助手在当前道路中的驾驶表现或与乘客的互动情况。</span>
+          ④ 完成正式驾驶体验。
         </div>
         <div style="margin-top:22px;"><button id="welcome-next" class="continue-btn">开始实验</button></div>
       </div>`,
@@ -1197,9 +1206,9 @@
       stimulus:`<div class="fullscreen-container">
         <div class="guide-box" style="width:min(900px,92vw);">
           <div class="guide-title">点数分配任务</div>
-          <div class="context-box">这款智驾助手目前已经具备基本水平相同的<span class="ability-text">能力功能</span>和<span class="emotion-text">情感功能</span>。现在有 <span class="highlight">10 个额外升级点</span>，请根据您希望最终智驾助手更侧重哪类功能进行分配。</div>
-          <div style="text-align:center;color:#ffcf8a;font-size:15px;font-weight:800;line-height:1.55;margin-bottom:7px;">本次分配结果不会决定后续出现的道路场景或智驾助手，请按照当前真实偏好独立作答。</div>
-          <div style="text-align:center;color:var(--muted);font-size:15px;line-height:1.5;">两类属性都至少保留1点，两边合计始终为10点。</div>
+          <div class="context-box">现在有一款智驾助手，它的<span class="ability-text">能力属性</span>和<span class="emotion-text">情感属性</span>目前处于相同的基本水平。为了进一步提升驾驶体验，您现在拥有一次升级机会，可为两类属性分配 <span class="highlight">10 个额外升级点</span>，请按照自己的偏好决定如何分配。</div>
+          <div style="text-align:center;color:#ffcf8a;font-size:15px;font-weight:800;line-height:1.55;margin-bottom:7px;">本任务只用于了解您对两类功能的个人偏好，不会影响后续的体验。</div>
+          <div style="text-align:center;color:var(--muted);font-size:15px;line-height:1.55;">两类属性都至少保留1点；点击任意属性的“＋”或“−”进行调整，<span style="color:#ffcf8a;font-weight:800;">两边加起来始终为10点</span>。</div>
           <div class="allocation-wrap">
             <div class="allocation-card ability">
               <div style="font-size:22px;font-weight:900;color:var(--green);">能力属性</div>
@@ -1251,7 +1260,7 @@
       stimulus:`<div class="fullscreen-container" style="justify-content:flex-start;">
         <div class="guide-title" style="margin-bottom:10px;">了解四款智驾助手</div>
         <div class="guide-box" style="width:min(1050px,92vw);padding:16px 22px;margin-bottom:12px;">
-          四款助手使用<span class="highlight">相同的外观</span>。绿色能量条表示<span class="ability-text">能力状态</span>，橘色能量条表示<span class="emotion-text">情感状态</span>；能量格越多，表示当前对应状态越高。
+          接下来请了解四款智驾助手。绿色能量条表示<span class="ability-text">能力状态</span>，橘色能量条表示<span class="emotion-text">情感状态</span>；能量格越多，表示当前对应状态越高。
         </div>
         <div class="assistant-intro-grid">
           ${makeAssistantIntroCard('HighAbility')}
@@ -1259,7 +1268,7 @@
           ${makeAssistantIntroCard('HighEmotion')}
           ${makeAssistantIntroCard('LowEmotion')}
         </div>
-        <div style="width:min(980px,92vw);text-align:center;margin:12px auto 0;color:#ffcf8a;font-size:14px;line-height:1.45;">请留意每款助手对应的状态类型和能量格数量。正式体验中不会直接标注“高”或“低”。</div>
+        <div style="width:min(980px,92vw);text-align:center;margin:12px auto 0;color:#ffcf8a;font-size:14px;line-height:1.45;">请留意每款助手对应的状态类型和能量格数量。</div>
         <div style="margin:14px 0 8px;"><button id="assistant-next" class="continue-btn">继续</button></div>
       </div>`,
       data:{Event_Type:'Assistant_Introduction'},
@@ -1274,7 +1283,7 @@
       stimulus:`<div class="fullscreen-container">
         <div class="guide-box">
           <div class="guide-title">先熟悉一下操作</div>
-          <div class="context-box">接下来将使用<span class="highlight">同一个练习道路</span>完成两次练习，分别熟悉能力状态和情感状态两种助手信息的呈现方式。练习内容不计入正式结果。</div>
+          <div class="context-box">请继续想象您是一名乘客，正坐在一辆<span class="highlight">无人智驾车辆的后排</span>。您所了解的道路和驾驶信息均由<span class="highlight">前排平板屏幕</span>提供。接下来将使用<span class="highlight">同一个练习道路</span>完成两次练习，分别熟悉能力状态和情感状态两种助手信息的呈现方式。练习内容不计入正式结果。</div>
           每次请按顺序：<br>
           ① 查看当前道路场景；<br>
           ② 查看智驾助手当前的能力状态或情感状态；<br>
@@ -1352,7 +1361,8 @@
       stimulus:`<div class="fullscreen-container">
         <div class="guide-box">
           <div class="guide-title">正式体验即将开始</div>
-          <div class="context-box">请继续想象您是一名乘客，正坐在无人智驾车辆的后排。每个道路场景都是一次<span class="highlight">独立的乘车体验</span>，请根据当前页面的信息重新判断。</div>
+          <div class="context-box">请继续想象您是一名乘客，正坐在一辆<span class="highlight">无人智驾车辆的后排</span>。您将通过<span class="highlight">前排平板屏幕</span>了解当前道路场景和智驾助手提供的信息。每个道路场景都是一次<span class="highlight">独立的乘车体验</span>，请根据当前页面的信息重新判断。</div>
+          <div style="background:#3a2b1f;border:1px solid #8a6034;border-radius:8px;padding:13px 18px;line-height:1.6;margin-bottom:12px;color:#ffe0b2;font-weight:800;">在本次体验设定中，<span class="highlight">无论是哪一款智驾助手，都能够保障乘客的人身安全</span>。</div>
           <div style="background:var(--panel-deep);border:1px solid var(--line);border-radius:9px;padding:16px 20px;line-height:1.75;">
             <div style="margin-bottom:8px;">① 查看当前<span class="highlight">道路场景</span>；</div>
             <div style="margin-bottom:8px;">② 查看当前智驾助手的<span class="highlight">状态能量格</span>；</div>
