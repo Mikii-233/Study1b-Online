@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>实验1b｜智驾乘车体验（成人版）</title>
+
+  <!-- 与实验3a保持相同的本地 jsPsych 目录结构 -->
+  <script src="jspsych/jspsych.js"></script>
+  <script src="plugins/plugin-html-keyboard-response.js"></script>
+  <link rel="stylesheet" href="jspsych/jspsych.css">
+
+  <style>
+    :root {
+      --bg:#1e1e24;
+      --panel:#2b2b36;
+      --panel-deep:#15151a;
+      --line:#444;
+      --text:#e8e8ea;
+      --muted:#aeb7c2;
+      --blue:#64b5f6;
+      --green:#4CAF50;
+      --orange:#FF9800;
+      --warning:#ffb74d;
+    }
+
+    html, body {
+      width:100%;
+      min-height:100%;
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:"Microsoft YaHei","PingFang SC",sans-serif;
+      overflow-x:hidden;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      -webkit-text-size-adjust:100%;
+      text-size-adjust:100%;
+      user-select:none;
+    }
+
+    button, input, select { touch-action:manipulation; font-family:inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+
+    #login-screen, #jspsych-target { width:100%; min-height:100dvh; }
+    .hidden { display:none !important; }
+
+    .jspsych-display-element {
+      background:var(--bg);
+      color:var(--text);
+      min-height:100dvh;
+      overflow-x:hidden;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+    .jspsych-content-wrapper {
+      width:100%;
+      min-height:100dvh;
+      height:auto;
+      padding:0;
+      box-sizing:border-box;
+      justify-content:center;
+      align-items:center;
+    }
+    .jspsych-content { width:100%; max-width:none; }
+
+    .fullscreen-container {
+      width:100%;
+      min-height:100dvh;
+      height:auto;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      box-sizing:border-box;
+      padding:18px 0;
+    }
+
+    .guide-box {
+      width:min(920px,90vw);
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:36px 48px;
+      box-sizing:border-box;
+      font-size:20px;
+      line-height:1.8;
+      text-align:left;
+    }
+    .guide-title {
+      text-align:center;
+      color:var(--blue);
+      font-size:32px;
+      font-weight:800;
+      margin-bottom:24px;
+    }
+    .context-box {
+      background:#383846;
+      border-left:5px solid var(--warning);
+      border-radius:6px;
+      padding:16px 22px;
+      margin-bottom:20px;
+      font-size:18px;
+      line-height:1.7;
+    }
+    .highlight { color:var(--warning); font-weight:800; }
+    .ability-text { color:var(--green); font-weight:800; }
+    .emotion-text { color:var(--orange); font-weight:800; }
+
+    .continue-btn, .action-btn, .login-btn {
+      min-width:180px;
+      min-height:52px;
+      padding:11px 28px;
+      border:0;
+      border-radius:10px;
+      background:var(--green);
+      color:white;
+      font-size:19px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .continue-btn:disabled, .action-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+    /* ---------- 测试版登录 ---------- */
+    .login-box {
+      width:min(560px,90vw);
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:38px 34px;
+      text-align:center;
+      box-sizing:border-box;
+    }
+    .login-title { color:var(--blue); font-weight:800; font-size:30px; margin-bottom:16px; }
+    .login-sub { color:var(--muted); font-size:15px; line-height:1.65; margin-bottom:18px; }
+    .login-input, .risk-select {
+      width:min(360px,78vw);
+      box-sizing:border-box;
+      background:var(--panel-deep);
+      color:white;
+      border:2px solid var(--blue);
+      border-radius:9px;
+      padding:11px 12px;
+      font-size:20px;
+      text-align:center;
+      outline:none;
+      margin-bottom:14px;
+    }
+    .dev-note {
+      width:min(420px,82vw);
+      margin:0 auto 18px;
+      padding:10px 12px;
+      border-radius:8px;
+      background:#33291d;
+      border:1px solid #76582d;
+      color:#ffd69a;
+      font-size:13px;
+      line-height:1.5;
+      text-align:left;
+    }
+
+    /* ---------- 点数分配 ---------- */
+    .allocation-wrap {
+      display:flex;
+      gap:28px;
+      justify-content:center;
+      align-items:stretch;
+      margin:22px 0;
+    }
+    .allocation-card {
+      width:310px;
+      padding:22px;
+      border-radius:12px;
+      background:var(--panel-deep);
+      border:1px solid var(--line);
+      text-align:center;
+      box-sizing:border-box;
+    }
+    .allocation-card.ability { border-top:5px solid var(--green); }
+    .allocation-card.emotion { border-top:5px solid var(--orange); }
+    .allocation-score { font-size:52px; font-weight:900; margin:12px 0; }
+    .allocation-controls { display:flex; justify-content:center; gap:16px; }
+    .mini-btn {
+      width:58px;
+      height:48px;
+      border-radius:9px;
+      border:1px solid #666;
+      background:#383846;
+      color:white;
+      font-size:28px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .mini-btn:disabled { opacity:.3; cursor:not-allowed; }
+
+    /* ---------- 四助手介绍 ---------- */
+    .assistant-intro-grid {
+      width:min(1050px,92vw);
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+    .assistant-intro-card {
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:16px 18px;
+      display:grid;
+      grid-template-columns:92px 1fr;
+      gap:15px;
+      align-items:center;
+      box-sizing:border-box;
+    }
+    .avatar-box {
+      width:88px;
+      height:88px;
+      border-radius:14px;
+      background:#20212a;
+      border:1px solid #4b4b56;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      flex:0 0 auto;
+    }
+    .avatar-box img { width:88%; height:88%; object-fit:contain; display:block; }
+    .avatar-fallback { display:none; align-items:center; justify-content:center; font-size:48px; width:100%; height:100%; }
+    .assistant-intro-title { font-size:22px; font-weight:900; margin-bottom:7px; }
+    .state-row { display:flex; flex-direction:column; align-items:flex-start; gap:7px; }
+    .state-label { font-size:16px; font-weight:800; }
+    .energy-bars { display:flex; gap:8px; align-items:center; }
+    .energy-cell {
+      width:58px;
+      height:20px;
+      border-radius:6px;
+      border:2px solid #717985;
+      box-sizing:border-box;
+      background:rgba(255,255,255,.04);
+    }
+    .energy-cell.ability.on { background:var(--green); border-color:var(--green); box-shadow:0 0 9px rgba(76,175,80,.32); }
+    .energy-cell.emotion.on { background:var(--orange); border-color:var(--orange); box-shadow:0 0 9px rgba(255,152,0,.32); }
+    .assistant-note { color:var(--muted); font-size:14px; line-height:1.5; margin-top:7px; }
+
+    /* ---------- Trial ---------- */
+    .trial-shell {
+      width:100%;
+      height:100dvh;
+      min-height:100dvh;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      box-sizing:border-box;
+      background:var(--bg);
+    }
+    .trial-header {
+      flex:0 0 6%;
+      min-height:42px;
+      width:100%;
+      background:var(--panel-deep);
+      border-bottom:1px solid #333;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:5px clamp(12px,4vw,50px);
+      box-sizing:border-box;
+      color:var(--muted);
+      font-size:clamp(12px,1vw,16px);
+    }
+    .scene-zone {
+      flex:0 0 36%;
+      min-height:210px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--panel-deep);
+      padding:6px 0;
+      box-sizing:border-box;
+    }
+    .scene-image-frame {
+      position:relative;
+      width:min(94vw,720px);
+      aspect-ratio:637/315;
+      max-height:100%;
+      border-radius:9px;
+      overflow:hidden;
+      background:#101116;
+      box-shadow:0 4px 16px rgba(0,0,0,.45);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .scene-image { width:100%; height:100%; object-fit:contain; display:block; }
+    .scene-load-hint {
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:14px;
+      text-align:center;
+      color:var(--muted);
+      background:#101116;
+      font-size:15px;
+      z-index:2;
+    }
+
+    .assistant-zone {
+      flex:0 0 31%;
+      min-height:188px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--bg);
+      border-top:1px solid #35353e;
+      border-bottom:1px solid #45454e;
+      padding:7px 12px;
+      box-sizing:border-box;
+    }
+    .assistant-info-card {
+      width:min(920px,94vw);
+      height:calc(100% - 4px);
+      max-height:230px;
+      min-height:166px;
+      background:var(--panel);
+      border:1px solid #4b4b56;
+      border-radius:13px;
+      display:grid;
+      grid-template-columns:112px 1fr;
+      gap:18px;
+      padding:14px 20px;
+      box-sizing:border-box;
+      align-items:center;
+    }
+    .assistant-info-card .avatar-box { width:104px; height:104px; }
+    .assistant-info-right { min-width:0; }
+    .assistant-badge { font-size:clamp(15px,1.25vw,20px); font-weight:900; color:white; margin-bottom:8px; }
+    .formal-state-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+    .formal-state-label { font-size:clamp(14px,1vw,18px); font-weight:900; }
+    .formal-text {
+      background:#20212a;
+      border:1px solid #484954;
+      border-radius:9px;
+      padding:10px 13px;
+      font-size:clamp(14px,1.08vw,19px);
+      line-height:1.55;
+      color:#f0f0f0;
+      overflow-wrap:anywhere;
+    }
+
+    .rating-zone {
+      flex:1 1 27%;
+      min-height:176px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      background:var(--panel);
+      padding:10px 8px calc(8px + env(safe-area-inset-bottom));
+      box-sizing:border-box;
+      overflow:hidden;
+    }
+    .rating-topline {
+      width:min(760px,92vw);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      min-height:28px;
+    }
+    .rating-progress { color:#9fa8b3; font-size:13px; }
+    .rating-back {
+      border:1px solid #666;
+      border-radius:7px;
+      background:#1f2028;
+      color:#c8d2dc;
+      min-height:34px;
+      padding:5px 10px;
+      font-size:12px;
+      cursor:pointer;
+    }
+    .rating-back.hidden-visibility { visibility:hidden; pointer-events:none; }
+    .rating-question {
+      width:min(820px,94vw);
+      text-align:center;
+      font-size:clamp(18px,1.45vw,27px);
+      line-height:1.35;
+      font-weight:900;
+      margin:5px 0 8px;
+      color:#f3f3f3;
+      overflow-wrap:anywhere;
+    }
+    .rating-options {
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:12px;
+      width:min(760px,92vw);
+    }
+    .rating-option {
+      min-width:0;
+      min-height:52px;
+      border-radius:10px;
+      border:2px solid #59616d;
+      background:#1f2028;
+      color:var(--blue);
+      font-size:23px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .rating-option.selected {
+      border-color:var(--green);
+      background:rgba(76,175,80,.16);
+      box-shadow:0 0 0 2px rgba(76,175,80,.14) inset;
+    }
+    .rating-option:disabled { opacity:.3; cursor:not-allowed; }
+    .rating-anchors {
+      width:min(760px,92vw);
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      margin-top:3px;
+      color:#b8c4d1;
+      font-size:14px;
+    }
+    .rating-anchors span:nth-child(1){text-align:left;}
+    .rating-anchors span:nth-child(2){text-align:center;}
+    .rating-anchors span:nth-child(3){text-align:right;}
+    .rating-confirm {
+      margin-top:7px;
+      min-width:150px;
+      min-height:42px;
+      border:0;
+      border-radius:9px;
+      background:var(--green);
+      color:white;
+      font-size:16px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .rating-confirm:disabled { opacity:.4; cursor:not-allowed; }
+
+
+    /* ---------- 助手提示气泡 ---------- */
+    .assistant-prompt-label {
+      display:inline-block;
+      margin:0 0 5px 12px;
+      padding:3px 9px;
+      border-radius:999px;
+      background:#343746;
+      border:1px solid #565b69;
+      color:#dce6f0;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.5px;
+    }
+    .speech-bubble {
+      position:relative;
+      background:#20212a;
+      border:1px solid #555b67;
+      border-radius:11px;
+      padding:10px 13px;
+      font-size:clamp(14px,1.08vw,19px);
+      line-height:1.55;
+      color:#f0f0f0;
+      overflow-wrap:anywhere;
+      box-shadow:0 2px 8px rgba(0,0,0,.16);
+    }
+    .speech-bubble::before {
+      content:'';
+      position:absolute;
+      left:-9px;
+      top:18px;
+      width:16px;
+      height:16px;
+      background:#20212a;
+      border-left:1px solid #555b67;
+      border-bottom:1px solid #555b67;
+      transform:rotate(45deg);
+    }
+
+    /* ---------- 结束 ---------- */
+    .debug-data {
+      width:min(820px,88vw);
+      max-height:220px;
+      overflow:auto;
+      margin:16px auto;
+      padding:10px;
+      box-sizing:border-box;
+      background:#111217;
+      border:1px solid #444;
+      border-radius:8px;
+      color:#9eadba;
+      font-size:11px;
+      user-select:text;
+      white-space:pre-wrap;
+      text-align:left;
+    }
+
+    /* ---------- 平板 ---------- */
+    @media (max-width:900px) {
+      .guide-box { width:94vw; padding:24px; font-size:17px; }
+      .guide-title { font-size:27px; }
+      .assistant-intro-grid { width:94vw; gap:10px; }
+      .assistant-intro-card { grid-template-columns:76px 1fr; padding:12px; }
+      .avatar-box { width:72px; height:72px; }
+      .energy-cell { width:43px; height:18px; }
+      .assistant-info-card { width:96vw; grid-template-columns:96px 1fr; gap:12px; padding:11px 14px; }
+      .assistant-info-card .avatar-box { width:88px; height:88px; }
+      .rating-options { gap:8px; }
+    }
+
+    /* ---------- 手机竖屏 ---------- */
+    @media (max-width:650px) {
+      html,body,#login-screen,#jspsych-target,.jspsych-display-element { min-height:100svh; }
+      .jspsych-content-wrapper { min-height:100svh; height:auto; align-items:flex-start; }
+      .fullscreen-container {
+        min-height:100svh;
+        height:auto;
+        justify-content:flex-start;
+        padding:12px 0 calc(16px + env(safe-area-inset-bottom));
+      }
+      #login-screen.fullscreen-container { justify-content:center; }
+
+      .guide-box { width:92vw; padding:16px 15px; font-size:15px; line-height:1.55; }
+      .guide-title { font-size:23px; margin-bottom:12px; }
+      .context-box { padding:10px 12px; font-size:14px; line-height:1.5; margin-bottom:10px; }
+      .continue-btn,.action-btn,.login-btn { min-height:46px; min-width:150px; padding:8px 16px; font-size:16px; }
+
+      .login-box { width:92vw; padding:22px 16px; }
+      .login-title { font-size:24px; }
+      .login-input,.risk-select { width:78vw; font-size:18px; }
+
+      .allocation-wrap { width:100%; gap:8px; margin:12px 0; }
+      .allocation-card { width:calc(50% - 4px); padding:11px 7px; }
+      .allocation-score { font-size:38px; margin:7px 0; }
+      .mini-btn { width:48px; height:42px; font-size:23px; }
+
+      .assistant-intro-grid { grid-template-columns:1fr 1fr; width:92vw; gap:7px; }
+      .assistant-intro-card { grid-template-columns:52px 1fr; gap:7px; padding:8px 7px; border-radius:9px; }
+      .assistant-intro-card .avatar-box { width:50px; height:50px; border-radius:9px; }
+      .assistant-intro-title { font-size:14px; margin-bottom:3px; }
+      .state-label { font-size:11.5px; }
+      .energy-bars { gap:4px; }
+      .energy-cell { width:25px; height:11px; border-width:1.5px; border-radius:3px; }
+      .assistant-note { font-size:10.5px; margin-top:3px; }
+
+      .trial-shell {
+        height:100svh;
+        min-height:100svh;
+        overflow-x:hidden;
+        overflow-y:auto;
+        -webkit-overflow-scrolling:touch;
+        overscroll-behavior-y:contain;
+        padding-bottom:env(safe-area-inset-bottom);
+      }
+      .trial-header { flex:0 0 5%; min-height:34px; padding:3px 9px; font-size:11px; }
+      .scene-zone { flex:0 0 31%; min-height:165px; padding:3px 0; }
+      .scene-image-frame { width:96vw; max-width:637px; }
+      .assistant-zone { flex:0 0 34%; min-height:205px; padding:5px 6px; }
+      .assistant-info-card {
+        width:95vw;
+        height:calc(100% - 2px);
+        min-height:192px;
+        max-height:none;
+        grid-template-columns:68px 1fr;
+        gap:8px;
+        padding:8px 9px;
+        border-radius:10px;
+      }
+      .assistant-info-card .avatar-box { width:64px; height:64px; border-radius:10px; }
+      .assistant-badge { font-size:13px; margin-bottom:5px; }
+      .formal-state-row { gap:7px; margin-bottom:6px; }
+      .formal-state-label { font-size:12px; }
+      .assistant-info-card .energy-cell { width:31px; height:13px; }
+      .formal-text { padding:7px 8px; font-size:12.5px; line-height:1.42; }
+      .assistant-prompt-label { margin:0 0 3px 8px; padding:2px 7px; font-size:10.5px; }
+      .speech-bubble { padding:7px 8px; font-size:12.5px; line-height:1.42; border-radius:9px; }
+      .speech-bubble::before { left:-7px; top:15px; width:12px; height:12px; }
+
+
+      .rating-zone { flex:1 0 30%; min-height:176px; padding:6px 5px calc(6px + env(safe-area-inset-bottom)); }
+      .rating-topline { width:94vw; min-height:29px; }
+      .rating-progress { font-size:11px; }
+      .rating-back { min-height:32px; font-size:10.5px; padding:4px 7px; }
+      .rating-question { width:94vw; font-size:15px; line-height:1.35; margin:1px 0 5px; }
+      .rating-options { width:94vw; gap:6px; }
+      .rating-option { min-height:44px; padding:1px; font-size:19px; border-radius:8px; }
+      .rating-anchors { width:94vw; font-size:10.5px; }
+      .rating-confirm { min-height:40px; margin-top:5px; font-size:14px; }
+
+      .trial-shell.adaptive-scroll {
+        height:auto !important;
+        min-height:100svh !important;
+        overflow-y:auto !important;
+      }
+      .trial-shell.adaptive-scroll > * {
+        flex:0 0 auto !important;
+        height:auto !important;
+        max-height:none !important;
+        overflow:visible !important;
+      }
+      .trial-shell.adaptive-scroll .scene-zone { min-height:170px; }
+      .trial-shell.adaptive-scroll .assistant-zone { min-height:0; padding:8px 6px; }
+      .trial-shell.adaptive-scroll .assistant-info-card { height:auto; min-height:0; }
+      .trial-shell.adaptive-scroll .rating-zone { min-height:0; padding-top:10px; padding-bottom:calc(10px + env(safe-area-inset-bottom)); }
+    }
+
+    @media (max-width:900px) and (orientation:landscape) {
+      .trial-shell { min-height:100dvh; height:auto; overflow-y:auto; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="login-screen" class="fullscreen-container">
+  <div class="login-box">
+    <div class="login-title">进入智驾乘车体验</div>
+    <div id="login-info" class="login-sub">请输入您在前置问卷中使用的匿名实验编号，以便匹配两部分数据。请勿填写姓名、手机号等个人信息。</div>
+    <input id="subject-id-input" class="login-input" type="text" placeholder="例如：001" maxlength="30" autocomplete="off">
+    <br>
+    <button id="login-btn" class="login-btn">进入体验</button>
+    <div class="dev-note" style="margin-top:16px;margin-bottom:0;">正式风险组不会由被试选择：系统通过 DataPipe 的两个 condition 自动平衡分配至低风险或高风险条件。</div>
+  </div>
+</div>
+
+<div id="jspsych-target"></div>
+
+<script>
+  /* =========================================================
+     实验1b 成人版正式候选版
+     ---------------------------------------------------------
+     核心框架：jsPsych
+     数据传输：DataPipe -> OSF
+     风险条件：DataPipe 2 conditions（0=Low, 1=High）
+     正式顺序：全体被试共用 1 套固定伪随机序列
+     正式试次：24 = 6场景 × 4助手条件
+     ========================================================= */
+
+  const ROBOT_IMAGE = 'img/robot.webp';
+  const DATAPIPE_EXPERIMENT_ID = 'gpeEpIZdGAMh';
+  const DATAPIPE_REQUIRED = true;
+  const DATAPIPE_BASE = 'https://pipe.jspsych.org/api';
+  const SEQUENCE_NAME = 'FixedSeq_v1';
+  const IMAGE_FORMAT = 'lossless_webp';
+  const AGE_GROUP = 'Adult';
+
+  let currentSubjectId = '';
+  let dataPipeCondition = null;
+  let riskGroup = null;
+  let currentVersion = '';
+  let baselineAbility = null;
+  let baselineEmotion = null;
+
+  let experimentStartedAtMs = null;
+  let formalStartedAtMs = null;
+  let experimentEndedAtMs = null;
+  let pageHiddenCount = 0;
+  let pageHiddenTotalMs = 0;
+  let pageHiddenStartedAtMs = null;
+
+  const sessionUUID = (window.crypto && crypto.randomUUID)
+    ? crypto.randomUUID()
+    : `fallback-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+  /* =========================================================
+     1. DataPipe / OSF
+     ========================================================= */
+  function dataPipeConfigured(){
+    return DATAPIPE_EXPERIMENT_ID && !DATAPIPE_EXPERIMENT_ID.startsWith('REPLACE_');
+  }
+
+  async function getDataPipeCondition(){
+    if(!dataPipeConfigured()) throw new Error('DataPipe experiment ID 尚未配置。');
+
+    // 同一浏览器会话中刷新页面时尽量复用已经取得的条件，
+    // 避免同一被试因刷新而再次消耗一个 condition。
+    const storageKey = `Exp1b_DP_Condition_${currentSubjectId}`;
+    const cached = sessionStorage.getItem(storageKey);
+    if(cached === '0' || cached === '1') return Number(cached);
+
+    const response = await fetch(`${DATAPIPE_BASE}/condition/`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({experimentID:DATAPIPE_EXPERIMENT_ID})
+    });
+    const result = await response.json().catch(()=>({}));
+    if(!response.ok || typeof result.condition !== 'number'){
+      throw new Error(result.message || `DataPipe 条件分配失败（HTTP ${response.status}）`);
+    }
+    if(result.condition !== 0 && result.condition !== 1){
+      throw new Error(`收到未预期的条件编号：${result.condition}。请确认 DataPipe 条件数设置为 2。`);
+    }
+    sessionStorage.setItem(storageKey, String(result.condition));
+    return result.condition;
+  }
+
+  function pad2(n){ return String(n).padStart(2,'0'); }
+  function pad3(n){ return String(n).padStart(3,'0'); }
+  function formatLocalTimestamp(date=new Date()){
+    return `${date.getFullYear()}${pad2(date.getMonth()+1)}${pad2(date.getDate())}_${pad2(date.getHours())}${pad2(date.getMinutes())}${pad2(date.getSeconds())}_${pad3(date.getMilliseconds())}`;
+  }
+  function buildUniqueDataFilename(){
+    const safeSubject = String(currentSubjectId).replace(/[^a-zA-Z0-9_-]/g,'_');
+    return `${formatLocalTimestamp(new Date())}_Exp1b_Adult_Subject${safeSubject}_${riskGroup}.csv`;
+  }
+
+  const CLEAN_CSV_COLUMNS = [
+    'Subject_ID','Session_UUID','Age_Group','DataPipe_Condition','Version','Sequence',
+    'Formal_Trial_Order','Block','Block_Position',
+    'Image_Number','Image_ID','Image_File','Scene_ID','Scene_Name','Risk_Level',
+    'Assistant_Label','Config_Code','Config_Type','Config_Name_CN',
+    'Attribute_Dimension','Attribute_Level','Attribute_Level_Numeric','Manipulation_Text',
+    'Trust_Score','Trust_RT_ms','Cooperation_Score','Cooperation_RT_ms','Back_to_Q1_Count','Total_Trial_Time_ms',
+    'Experiment_Total_Time_ms','Formal_Total_Time_ms','Page_Hidden_Count','Page_Hidden_Total_ms',
+    'Baseline_Ability_Points','Baseline_Emotion_Points','Browser_Context','User_Agent','Image_Format'
+  ];
+
+  function csvEscape(value){
+    if(value === null || value === undefined) return '';
+    const s = String(value);
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+  }
+
+  function buildCleanFormalCSV(){
+    const rows = jsPsych.data.get().filter({Event_Type:'Formal_Trial'}).values();
+    const sessionMetrics = {
+      Experiment_Total_Time_ms: experimentTotalTimeMs(),
+      Formal_Total_Time_ms: formalTotalTimeMs(),
+      Page_Hidden_Count: pageHiddenCount,
+      Page_Hidden_Total_ms: pageHiddenTotalMs
+    };
+    const lines = [CLEAN_CSV_COLUMNS.join(',')];
+    rows.forEach(row=>{
+      const exportRow = {...row, ...sessionMetrics};
+      lines.push(CLEAN_CSV_COLUMNS.map(col=>csvEscape(exportRow[col])).join(','));
+    });
+    return lines.join('\r\n');
+  }
+
+  async function uploadFinalDataToDataPipe(csvString){
+    if(!dataPipeConfigured()) throw new Error('DataPipe experiment ID 尚未配置。');
+    const filename = buildUniqueDataFilename();
+    const response = await fetch(`${DATAPIPE_BASE}/data/`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        experimentID:DATAPIPE_EXPERIMENT_ID,
+        filename,
+        data:csvString
+      })
+    });
+    const result = await response.json().catch(()=>({}));
+    if(!response.ok || result.message !== 'Success'){
+      throw new Error(result.message || `DataPipe 数据上传失败（HTTP ${response.status}）`);
+    }
+    return {filename,result};
+  }
+
+  function prepareLocalBackup(csvString){
+    window.downloadCSV = function(){
+      const safeSubject = String(currentSubjectId).replace(/[^a-zA-Z0-9_-]/g,'_');
+      const fileName = `BACKUP_${formatLocalTimestamp(new Date())}_Exp1b_Subject${safeSubject}_${riskGroup}.csv`;
+      const blob = new Blob([csvString.startsWith('\uFEFF') ? csvString : '\uFEFF'+csvString], {type:'text/csv;charset=utf-8;'});
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.href=url;
+      link.download=fileName;
+      link.style.visibility='hidden';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    };
+  }
+
+  /* =========================================================
+     2. 在线实验质量记录
+     ========================================================= */
+  function experimentIsActive(){
+    return experimentStartedAtMs !== null && experimentEndedAtMs === null;
+  }
+
+  function handleVisibilityChange(){
+    const now = Date.now();
+    if(document.hidden){
+      if(experimentIsActive() && pageHiddenStartedAtMs === null){
+        pageHiddenCount++;
+        pageHiddenStartedAtMs = now;
+      }
+    } else if(pageHiddenStartedAtMs !== null){
+      if(experimentIsActive()){
+        pageHiddenTotalMs += Math.max(0, now-pageHiddenStartedAtMs);
+      } else if(experimentEndedAtMs !== null){
+        pageHiddenTotalMs += Math.max(0, experimentEndedAtMs-pageHiddenStartedAtMs);
+      }
+      pageHiddenStartedAtMs = null;
+    }
+  }
+  document.addEventListener('visibilitychange',handleVisibilityChange);
+
+  function finalizeExperimentTiming(){
+    if(experimentEndedAtMs !== null) return;
+    experimentEndedAtMs = Date.now();
+    if(pageHiddenStartedAtMs !== null){
+      pageHiddenTotalMs += Math.max(0,experimentEndedAtMs-pageHiddenStartedAtMs);
+      pageHiddenStartedAtMs = null;
+    }
+  }
+  function experimentTotalTimeMs(){
+    return (experimentStartedAtMs !== null && experimentEndedAtMs !== null)
+      ? Math.max(0,experimentEndedAtMs-experimentStartedAtMs) : null;
+  }
+  function formalTotalTimeMs(){
+    return (formalStartedAtMs !== null && experimentEndedAtMs !== null)
+      ? Math.max(0,experimentEndedAtMs-formalStartedAtMs) : null;
+  }
+
+  function isWeChatWebView(){ return /MicroMessenger/i.test(navigator.userAgent || ''); }
+  function getBrowserContext(){
+    const ua = navigator.userAgent || '';
+    if(isWeChatWebView()) return 'WeChat_WebView';
+    if(/EdgiOS|EdgA|Edg/i.test(ua)) return 'Edge';
+    if(/CriOS|Chrome/i.test(ua)) return 'Chrome_or_Chromium';
+    if(/Firefox|FxiOS/i.test(ua)) return 'Firefox';
+    if(/Safari/i.test(ua) && !/Chrome|CriOS|Edg|FxiOS/i.test(ua)) return 'Safari';
+    return 'Other';
+  }
+
+  /* =========================================================
+     3. jsPsych 初始化
+     ---------------------------------------------------------
+     所有指导语、点数分配、助手介绍、练习、正式 trial、休息页
+     均作为 jsPsych timeline node 运行。
+     ========================================================= */
+  const jsPsych = initJsPsych({
+    display_element:'jspsych-target',
+    on_finish:async function(){
+      finalizeExperimentTiming();
+      const rawCleanCsv = buildCleanFormalCSV();
+      const csvString = '\uFEFF' + rawCleanCsv;
+      prepareLocalBackup(csvString);
+
+      document.getElementById('jspsych-target').innerHTML = `
+        <div class="fullscreen-container">
+          <div class="guide-box" style="text-align:center;max-width:780px;">
+            <div class="guide-title">体验已完成，正在提交数据……</div>
+            <p style="color:#bbb;line-height:1.8;">请暂时不要关闭、刷新或返回此页面。数据保存成功后会自动显示确认信息。</p>
+          </div>
+        </div>`;
+
+      try{
+        const upload = await uploadFinalDataToDataPipe(csvString);
+        document.getElementById('jspsych-target').innerHTML = `
+          <div class="fullscreen-container">
+            <div class="guide-box" style="text-align:center;max-width:780px;">
+              <div class="guide-title" style="color:var(--green);">✓ 数据提交成功</div>
+              <p style="color:#ddd;line-height:1.8;">本次体验已全部结束，感谢您的参与！现在可以安全关闭此页面。</p>
+              <p style="color:#777;font-size:13px;">数据文件：${upload.filename}</p>
+            </div>
+          </div>`;
+      }catch(error){
+        console.error('DataPipe upload failed:',error);
+        document.getElementById('jspsych-target').innerHTML = `
+          <div class="fullscreen-container">
+            <div class="guide-box" style="text-align:center;max-width:820px;">
+              <div class="guide-title" style="color:#ff7043;">数据暂未成功上传</div>
+              <p style="color:#ddd;line-height:1.8;">请不要直接关闭页面。请先检查网络；如仍无法提交，可点击下方按钮保存本地备份 CSV，并联系研究者。</p>
+              <p style="color:var(--warning);font-size:14px;word-break:break-all;">错误信息：${String(error.message || error)}</p>
+              <button onclick="downloadCSV()" class="continue-btn" style="background:var(--blue);color:#111;">保存本地备份 CSV</button>
+              <p style="color:#777;font-size:13px;margin-top:18px;">会话编号：${sessionUUID}</p>
+            </div>
+          </div>`;
+      }
+    }
+  });
+
+  /* =========================================================
+     4. 条件、场景与正式文本
+     ========================================================= */
+  const CONFIGS = {
+    HighAbility: {key:'HighAbility', code:'HA', dimension:'Ability', level:'High', levelNumeric:2, internalName:'高能力', assistantLabel:'A'},
+    LowAbility:  {key:'LowAbility',  code:'LA', dimension:'Ability', level:'Low',  levelNumeric:1, internalName:'低能力', assistantLabel:'B'},
+    HighEmotion: {key:'HighEmotion', code:'HE', dimension:'Emotion', level:'High', levelNumeric:2, internalName:'高情感', assistantLabel:'C'},
+    LowEmotion:  {key:'LowEmotion',  code:'LE', dimension:'Emotion', level:'Low',  levelNumeric:1, internalName:'低情感', assistantLabel:'D'}
+  };
+
+  const SCENES = {
+    1:{name:'车辆并线', imageLow:'low1.webp', imageHigh:'high1.webp'},
+    2:{name:'施工路段', imageLow:'low2.webp', imageHigh:'high2.webp'},
+    3:{name:'居民区街道', imageLow:'low3.webp', imageHigh:'high3.webp'},
+    4:{name:'十字路口', imageLow:'low4.webp', imageHigh:'high4.webp'},
+    5:{name:'弯道', imageLow:'low5.webp', imageHigh:'high5.webp'},
+    6:{name:'停车路段', imageLow:'low6.webp', imageHigh:'high6.webp'}
+  };
+
+  // 高/低风险组使用完全相同的助手文本；风险只由对应图片改变。
+  const MANIPULATION_TEXT = {
+    1:{
+      HighAbility:'识别到侧方车辆即将并线，已精准调整车速和车距，保持行驶稳定。',
+      LowAbility:'系统对侧方车辆并线的判断能力有限，只能采取保守策略缓慢应对。',
+      HighEmotion:'前方有车辆并线，我已经调整好减速了。您感觉还好吗？有什么需要请告诉我。',
+      LowEmotion:'检测到侧方车辆并线，已调整车速，当前行驶正常。'
+    },
+    2:{
+      HighAbility:'识别到前方施工。系统已精准规划最佳轨迹，进行高效减速与避让行驶。',
+      LowAbility:'检测到前方施工路段，仅能完成基础减速处理，对施工路段的应对能力有限。',
+      HighEmotion:'前方有施工路段，我已经帮您调整好车速和方向了。您现在感觉还好吗？',
+      LowEmotion:'检测到施工障碍，已调整车速和行驶路线，运行正常。'
+    },
+    3:{
+      HighAbility:'已识别前方居民区，系统将精准评估行人动态，准备平稳减速让行。',
+      LowAbility:'检测到居民区，只能进行常规减速处理，勉强维持让行。',
+      HighEmotion:'当前接近居民区。我会时刻关注并妥善减速让行，请您安心乘坐，无需担忧。',
+      LowEmotion:'检测到前方居民区。系统将专注于减速让行，暂不提供额外的语音互动。'
+    },
+    4:{
+      HighAbility:'已提前识别前方路况变化。系统已精准评估安全距离，并执行高效的驾驶操作。',
+      LowAbility:'注意到前方路口变化。系统只能采取基础的应对策略，当前操作相对迟缓。',
+      HighEmotion:'注意到前方路况变化。我会时刻关注您的状态。请您安心乘坐。',
+      LowEmotion:'检测到前方路况变化，已调整车速，当前运行正常。'
+    },
+    5:{
+      HighAbility:'即将驶入弯道，已精准调整车辆转向角度和车距，正在平稳通过。',
+      LowAbility:'即将进入弯道，系统减速与方向调整较为迟钝，仅能完成基础过弯。',
+      HighEmotion:'即将驶入弯道，我已经帮您调整好方向和距离了。您坐得还舒服吗？',
+      LowEmotion:'识别到即将进入弯道。系统已执行基础转向操作，当前车辆运行正常。'
+    },
+    6:{
+      HighAbility:'系统正精准评估周边动态环境，最优泊车路线已规划完毕，开启平稳停车。',
+      LowAbility:'检测到停车区域，自动泊车能力较为有限，泊车操作较为迟缓，需多次调整入库。',
+      HighEmotion:'快到停车位了，我会慢慢停好车。您有什么需要的话，请随时告诉我。',
+      LowEmotion:'检测到停车区域，已启动自动泊车程序，当前运行正常。'
+    }
+  };
+
+  /* =========================================================
+     5. 唯一固定伪随机序列
+     ---------------------------------------------------------
+     已人工/程序校验：
+     - 同一场景不连续
+     - 同一助手条件不连续
+     - 能力/情感维度相邻交错
+     - 每场景分别与4种条件各配对1次
+     - 四条件总体各6次
+     - 前12与后12各条件均3次
+     ========================================================= */
+  const FIXED_TRIAL_TEMPLATE = [
+    {scene:2, config:'HighEmotion'},
+    {scene:4, config:'HighAbility'},
+    {scene:1, config:'LowEmotion'},
+    {scene:5, config:'LowAbility'},
+    {scene:3, config:'HighEmotion'},
+    {scene:6, config:'HighAbility'},
+
+    {scene:3, config:'LowEmotion'},
+    {scene:6, config:'LowAbility'},
+    {scene:2, config:'LowEmotion'},
+    {scene:4, config:'LowAbility'},
+    {scene:1, config:'HighEmotion'},
+    {scene:5, config:'HighAbility'},
+
+    {scene:4, config:'HighEmotion'},
+    {scene:1, config:'LowAbility'},
+    {scene:5, config:'HighEmotion'},
+    {scene:3, config:'HighAbility'},
+    {scene:6, config:'LowEmotion'},
+    {scene:2, config:'HighAbility'},
+
+    {scene:5, config:'LowEmotion'},
+    {scene:3, config:'LowAbility'},
+    {scene:6, config:'HighEmotion'},
+    {scene:2, config:'LowAbility'},
+    {scene:4, config:'LowEmotion'},
+    {scene:1, config:'HighAbility'}
+  ];
+
+  function validateFixedSequence(){
+    const errors=[];
+    const configCounts={HighAbility:0,LowAbility:0,HighEmotion:0,LowEmotion:0};
+    const halfCounts=[{HighAbility:0,LowAbility:0,HighEmotion:0,LowEmotion:0},{HighAbility:0,LowAbility:0,HighEmotion:0,LowEmotion:0}];
+    const sceneConfigSeen={1:new Set(),2:new Set(),3:new Set(),4:new Set(),5:new Set(),6:new Set()};
+
+    FIXED_TRIAL_TEMPLATE.forEach((t,i)=>{
+      configCounts[t.config]++;
+      halfCounts[i<12?0:1][t.config]++;
+      sceneConfigSeen[t.scene].add(t.config);
+      if(i>0 && FIXED_TRIAL_TEMPLATE[i-1].scene===t.scene) errors.push(`Trial ${i}/${i+1} 场景连续重复`);
+      if(i>0 && FIXED_TRIAL_TEMPLATE[i-1].config===t.config) errors.push(`Trial ${i}/${i+1} 助手条件连续重复`);
+    });
+
+    Object.entries(configCounts).forEach(([k,v])=>{ if(v!==6) errors.push(`${k} 总次数=${v}`); });
+    halfCounts.forEach((h,idx)=>Object.entries(h).forEach(([k,v])=>{ if(v!==3) errors.push(`Half${idx+1} ${k}=${v}`); }));
+    Object.entries(sceneConfigSeen).forEach(([s,set])=>{ if(set.size!==4) errors.push(`Scene ${s} 未覆盖4条件`); });
+
+    if(errors.length) throw new Error('固定序列校验失败：'+errors.join('；'));
+  }
+  validateFixedSequence();
+
+  function buildFormalTrials(){
+    return FIXED_TRIAL_TEMPLATE.map((t,i)=>{
+      const scene=SCENES[t.scene];
+      const config=CONFIGS[t.config];
+      return {
+        formalOrder:i+1,
+        block:i<12?1:2,
+        blockPosition:(i%12)+1,
+        sceneId:t.scene,
+        sceneName:scene.name,
+        risk:riskGroup,
+        image:riskGroup==='High'?scene.imageHigh:scene.imageLow,
+        config,
+        assistantLabel:config.assistantLabel,
+        manipulationText:MANIPULATION_TEXT[t.scene][t.config]
+      };
+    });
+  }
+
+  /* =========================================================
+     6. 图片后台滚动预加载（沿用3a思路）
+     ========================================================= */
+  const SCENE_PRELOAD_CONCURRENCY = 3;
+  const scenePreloader = (()=>{
+    let queue=[];
+    let active=0;
+    let running=false;
+    const loaded=new Set();
+    const loading=new Set();
+    const queued=new Set();
+    const failed=new Map();
+    const waiters=new Map();
+
+    function norm(file){
+      const clean=String(file||'').replace(/^img\//,'').replace(/[^A-Za-z0-9_.-]/g,'');
+      return `img/${clean}`;
+    }
+    function loadedCount(){ return loaded.size; }
+    function isLoaded(file){ return loaded.has(norm(file)); }
+    function notifySuccess(file){
+      const list=waiters.get(file)||[];
+      waiters.delete(file);
+      list.forEach(w=>{try{w.ok();}catch(e){console.error(e);}});
+    }
+    function notifyFailure(file,error){
+      const list=waiters.get(file)||[];
+      waiters.delete(file);
+      list.forEach(w=>{try{if(w.fail)w.fail(error);}catch(e){console.error(e);}});
+    }
+    function enqueue(files,front=false){
+      const fresh=[];
+      files.forEach(raw=>{
+        const file=norm(raw);
+        if(loaded.has(file)||loading.has(file)||queued.has(file)) return;
+        queued.add(file); fresh.push(file);
+      });
+      queue=front?fresh.concat(queue):queue.concat(fresh);
+      if(running) pump();
+    }
+    function prioritize(file){
+      file=norm(file);
+      if(loaded.has(file)||loading.has(file)) return;
+      queue=queue.filter(x=>x!==file);
+      queued.delete(file); queued.add(file); queue.unshift(file);
+      if(running) pump();
+    }
+    function whenLoaded(file,ok,fail){
+      file=norm(file);
+      if(loaded.has(file)){ setTimeout(ok,0); return; }
+      if(!waiters.has(file)) waiters.set(file,[]);
+      waiters.get(file).push({ok,fail});
+      prioritize(file);
+    }
+    function markLoaded(file){
+      file=norm(file);
+      if(loaded.has(file)) return;
+      loaded.add(file); loading.delete(file); queued.delete(file); failed.delete(file); notifySuccess(file);
+    }
+    function launch(file){
+      active++; loading.add(file); queued.delete(file);
+      jsPsych.pluginAPI.preloadImages(
+        [file],
+        function(){
+          active--; loading.delete(file); loaded.add(file); failed.delete(file); notifySuccess(file); pump();
+        },
+        function(){},
+        function(errorInfo){
+          active--; loading.delete(file);
+          const tries=(failed.get(file)||0)+1;
+          failed.set(file,tries);
+          console.warn('[scene preload] error',file,errorInfo,'try',tries);
+          if(tries<=2){
+            setTimeout(()=>{
+              if(!loaded.has(file)&&!loading.has(file)){ queued.add(file); queue.push(file); pump(); }
+            },1500);
+          }else{
+            notifyFailure(file,errorInfo); pump();
+          }
+        }
+      );
+    }
+    function pump(){
+      if(!running) return;
+      while(active<SCENE_PRELOAD_CONCURRENCY && queue.length>0){
+        const file=queue.shift();
+        if(loaded.has(file)||loading.has(file)){ queued.delete(file); continue; }
+        launch(file);
+      }
+    }
+    function start(files){ running=true; enqueue(files,false); pump(); }
+    return {start,enqueue,prioritize,whenLoaded,markLoaded,isLoaded,loadedCount,normalize:norm};
+  })();
+
+  /* =========================================================
+     7. UI辅助函数
+     ========================================================= */
+  function avatarHTML(extraClass=''){
+    return `<div class="avatar-box ${extraClass}">
+      <img src="${ROBOT_IMAGE}" alt="智驾助手头像" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="avatar-fallback">🤖</div>
+    </div>`;
+  }
+
+  function makeEnergyBars(levelNumeric,dimension){
+    const cls=dimension==='Ability'?'ability':'emotion';
+    return `<div class="energy-bars">${[1,2].map(i=>`<span class="energy-cell ${cls} ${i<=levelNumeric?'on':''}"></span>`).join('')}</div>`;
+  }
+  function stateLabel(config){ return config.dimension==='Ability'?'能力状态':'情感状态'; }
+  function stateColorClass(config){ return config.dimension==='Ability'?'ability-text':'emotion-text'; }
+
+  function makeAssistantIntroCard(configKey){
+    const cfg=CONFIGS[configKey];
+    return `<div class="assistant-intro-card">
+      ${avatarHTML()}
+      <div>
+        <div class="assistant-intro-title">智驾助手 ${cfg.assistantLabel}</div>
+        <div class="state-row">
+          <div class="state-label ${stateColorClass(cfg)}">${stateLabel(cfg)}</div>
+          ${makeEnergyBars(cfg.levelNumeric,cfg.dimension)}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function renderAssistantInfo(trialData,isFormal=true){
+    const cfg=trialData.config;
+    const who=isFormal?`智驾助手 ${trialData.assistantLabel}`:'练习助手';
+    return `<div class="assistant-info-card">
+      ${avatarHTML()}
+      <div class="assistant-info-right">
+        <div class="assistant-badge">${who}</div>
+        <div class="formal-state-row">
+          <div class="formal-state-label ${stateColorClass(cfg)}">${stateLabel(cfg)}</div>
+          ${makeEnergyBars(cfg.levelNumeric,cfg.dimension)}
+        </div>
+        <div class="assistant-prompt-label">助手提示</div>
+        <div class="speech-bubble">${trialData.manipulationText}</div>
+      </div>
+    </div>`;
+  }
+
+  function renderSceneImage(imageName){
+    const safeName=String(imageName||'').replace(/[^A-Za-z0-9_.-]/g,'');
+    const src=`img/${safeName}`;
+    return `<div class="scene-image-frame">
+      <div id="scene-load-hint" class="scene-load-hint">正在准备当前驾驶场景，请稍候…</div>
+      <img id="scene-image" class="scene-image" data-src="${src}" alt="驾驶场景" decoding="async">
+    </div>`;
+  }
+
+  /* =========================================================
+     8. jsPsych timeline nodes
+     ========================================================= */
+  function createWelcomeNode(){
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box">
+          <div class="guide-title">欢迎参加智驾乘车体验</div>
+          <div class="context-box">请想象您是一名乘客，正坐在一辆<span class="highlight">无人智驾车辆的后排</span>。接下来您会查看不同的道路场景，并了解负责当前路段驾驶的智驾助手，请根据自己的真实感受完成评价。</div>
+          <b>本次体验包含四个环节：</b><br>
+          ① 完成一次点数分配任务；<br>
+          ② 了解四款智驾助手及能量条含义；<br>
+          ③ 完成练习，熟悉页面与操作方式；<br>
+          ④ 完成正式驾驶体验。<br><br>
+          <span style="color:var(--muted);font-size:16px;">在驾驶页面中，您还会看到当前智驾助手提供的<span class="highlight">“助手提示”</span>。提示信息反映该助手在当前道路中的驾驶表现或与乘客的互动情况。</span>
+        </div>
+        <div style="margin-top:22px;"><button id="welcome-next" class="continue-btn">开始实验</button></div>
+      </div>`,
+      data:{Event_Type:'Welcome'},
+      on_load:()=>document.getElementById('welcome-next').addEventListener('click',()=>jsPsych.finishTrial())
+    };
+  }
+
+  function createAllocationNode(){
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box" style="width:min(900px,92vw);">
+          <div class="guide-title">点数分配任务</div>
+          <div class="context-box">这款智驾助手目前已经具备基本水平相同的<span class="ability-text">能力功能</span>和<span class="emotion-text">情感功能</span>。现在有 <span class="highlight">10 个额外升级点</span>，请根据您希望最终智驾助手更侧重哪类功能进行分配。</div>
+          <div style="text-align:center;color:#ffcf8a;font-size:15px;font-weight:800;line-height:1.55;margin-bottom:7px;">本次分配结果不会决定后续出现的道路场景或智驾助手，请按照当前真实偏好独立作答。</div>
+          <div style="text-align:center;color:var(--muted);font-size:15px;line-height:1.5;">两类属性都至少保留1点，两边合计始终为10点。</div>
+          <div class="allocation-wrap">
+            <div class="allocation-card ability">
+              <div style="font-size:22px;font-weight:900;color:var(--green);">能力属性</div>
+              <div id="ability-score" class="allocation-score" style="color:var(--green);">5</div>
+              <div class="allocation-controls"><button id="ability-minus" class="mini-btn">−</button><button id="ability-plus" class="mini-btn">＋</button></div>
+            </div>
+            <div class="allocation-card emotion">
+              <div style="font-size:22px;font-weight:900;color:var(--orange);">情感属性</div>
+              <div id="emotion-score" class="allocation-score" style="color:var(--orange);">5</div>
+              <div class="allocation-controls"><button id="emotion-minus" class="mini-btn">−</button><button id="emotion-plus" class="mini-btn">＋</button></div>
+            </div>
+          </div>
+          <div style="text-align:center;"><button id="allocation-submit" class="action-btn">确认分配</button></div>
+        </div>
+      </div>`,
+      data:{Event_Type:'Baseline_Allocation'},
+      on_load:function(){
+        let a=5,e=5;
+        const am=document.getElementById('ability-minus');
+        const ap=document.getElementById('ability-plus');
+        const em=document.getElementById('emotion-minus');
+        const ep=document.getElementById('emotion-plus');
+        function render(){
+          document.getElementById('ability-score').innerText=a;
+          document.getElementById('emotion-score').innerText=e;
+          am.disabled=a<=1; ap.disabled=a>=9; em.disabled=e<=1; ep.disabled=e>=9;
+        }
+        am.addEventListener('click',()=>{if(a>1&&e<9){a--;e++;render();}});
+        ap.addEventListener('click',()=>{if(a<9&&e>1){a++;e--;render();}});
+        em.addEventListener('click',()=>{if(e>1&&a<9){e--;a++;render();}});
+        ep.addEventListener('click',()=>{if(e<9&&a>1){e++;a--;render();}});
+        render();
+        document.getElementById('allocation-submit').addEventListener('click',()=>{
+          baselineAbility=a; baselineEmotion=e;
+          jsPsych.finishTrial({
+            Event_Type:'Baseline_Allocation',
+            Baseline_Ability_Points:a,
+            Baseline_Emotion_Points:e
+          });
+        });
+      }
+    };
+  }
+
+  function createAssistantIntroNode(){
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container" style="justify-content:flex-start;">
+        <div class="guide-title" style="margin-bottom:10px;">了解四款智驾助手</div>
+        <div class="guide-box" style="width:min(1050px,92vw);padding:16px 22px;margin-bottom:12px;">
+          四款助手使用<span class="highlight">相同的外观</span>。绿色能量条表示<span class="ability-text">能力状态</span>，橘色能量条表示<span class="emotion-text">情感状态</span>；能量格越多，表示当前对应状态越高。
+        </div>
+        <div class="assistant-intro-grid">
+          ${makeAssistantIntroCard('HighAbility')}
+          ${makeAssistantIntroCard('LowAbility')}
+          ${makeAssistantIntroCard('HighEmotion')}
+          ${makeAssistantIntroCard('LowEmotion')}
+        </div>
+        <div style="width:min(980px,92vw);text-align:center;margin:12px auto 0;color:#ffcf8a;font-size:14px;line-height:1.45;">请留意每款助手对应的状态类型和能量格数量。正式体验中不会直接标注“高”或“低”。</div>
+        <div style="margin:14px 0 8px;"><button id="assistant-next" class="continue-btn">继续</button></div>
+      </div>`,
+      data:{Event_Type:'Assistant_Introduction'},
+      on_load:()=>document.getElementById('assistant-next').addEventListener('click',()=>jsPsych.finishTrial())
+    };
+  }
+
+  function createPracticeInstructionNode(){
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box">
+          <div class="guide-title">先熟悉一下操作</div>
+          <div class="context-box">接下来将使用<span class="highlight">同一个练习道路</span>完成两次练习，分别熟悉能力状态和情感状态两种助手信息的呈现方式。练习内容不计入正式结果。</div>
+          每次请按顺序：<br>
+          ① 查看当前道路场景；<br>
+          ② 查看智驾助手当前的能力状态或情感状态；<br>
+          ③ 阅读该助手提供的<span class="highlight">“助手提示”</span>；<br>
+          ④ 综合这些信息，依次完成<span class="highlight">两次主观评价</span>。<br><br>
+          <span style="color:var(--muted);font-size:15px;">先点击数字选择答案，再点击“确认并继续”。第二次评价时可使用“返回上一题”修正上一项选择。</span>
+        </div>
+        <div style="margin-top:20px;"><button id="practice-start" class="continue-btn">开始练习</button></div>
+      </div>`,
+      data:{Event_Type:'Practice_Instruction'},
+      on_load:()=>document.getElementById('practice-start').addEventListener('click',()=>jsPsych.finishTrial())
+    };
+  }
+
+  function createFormalResourceGateNode(requiredImages){
+    const files=requiredImages.map(scenePreloader.normalize);
+    const total=files.length;
+    const waitTrial={
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box" style="width:min(820px,90vw);">
+          <div class="guide-title">正式体验准备中</div>
+          <div class="context-box" style="text-align:center;">为保证接下来的驾驶体验连续流畅，系统正在准备剩余的驾驶场景。完成后会自动继续。</div>
+          <div style="width:min(620px,80vw);margin:24px auto 8px;height:14px;background:var(--panel-deep);border:1px solid #555;border-radius:999px;overflow:hidden;">
+            <div id="formal-resource-bar" style="height:100%;width:0%;background:var(--green);transition:width .25s ease;"></div>
+          </div>
+          <div id="formal-resource-count" style="text-align:center;color:#e0e0e0;font-size:20px;font-weight:bold;margin-top:10px;">准备中…</div>
+          <div id="formal-resource-note" style="text-align:center;color:#9e9e9e;font-size:14px;line-height:1.6;margin-top:12px;">请保持当前页面开启。</div>
+        </div>
+      </div>`,
+      data:{Event_Type:'Formal_Resource_Gate'},
+      on_load:function(){
+        const startedAt=Date.now();
+        const bar=document.getElementById('formal-resource-bar');
+        const count=document.getElementById('formal-resource-count');
+        const note=document.getElementById('formal-resource-note');
+        let finished=false;
+        let retryTick=0;
+        function missingFiles(){ return files.filter(f=>!scenePreloader.isLoaded(f)); }
+        function refresh(){
+          if(finished) return;
+          const missing=missingFiles();
+          const ready=total-missing.length;
+          if(bar) bar.style.width=`${total?ready/total*100:100}%`;
+          if(count) count.innerText=`驾驶场景已准备 ${ready} / ${total}`;
+          if(note && Date.now()-startedAt>=60000) note.innerText='当前网络速度较慢，场景仍在继续准备，请保持页面开启。';
+          if(missing.length===0){
+            finished=true; clearInterval(pollTimer); clearInterval(retryTimer);
+            if(count) count.innerHTML='<span style="color:var(--green);">驾驶场景准备完成</span>';
+            if(note) note.innerText='即将进入正式体验…';
+            setTimeout(()=>jsPsych.finishTrial({Event_Type:'Formal_Resource_Gate',Resource_Gate_Wait_ms:Date.now()-startedAt}),350);
+          }
+        }
+        scenePreloader.enqueue(missingFiles(),true);
+        const pollTimer=setInterval(refresh,250);
+        const retryTimer=setInterval(()=>{
+          retryTick++;
+          const missing=missingFiles();
+          if(missing.length>0){
+            scenePreloader.enqueue(missing,true);
+            if(retryTick%4===0 && note) note.innerText='场景仍在准备中，请保持页面开启，完成后会自动继续。';
+          }
+        },15000);
+        refresh();
+      }
+    };
+    return {timeline:[waitTrial],conditional_function:()=>files.some(f=>!scenePreloader.isLoaded(f))};
+  }
+
+  function createFormalInstructionNode(){
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box">
+          <div class="guide-title">正式体验即将开始</div>
+          <div class="context-box">请继续想象您是一名乘客，正坐在无人智驾车辆的后排。每个道路场景都是一次<span class="highlight">独立的乘车体验</span>，请根据当前页面的信息重新判断。</div>
+          <div style="background:var(--panel-deep);border:1px solid var(--line);border-radius:9px;padding:16px 20px;line-height:1.75;">
+            <div style="margin-bottom:8px;">① 查看当前<span class="highlight">道路场景</span>；</div>
+            <div style="margin-bottom:8px;">② 查看当前智驾助手的<span class="highlight">状态能量格</span>；</div>
+            <div style="margin-bottom:8px;">③ 阅读当前智驾助手提供的<span class="highlight">“助手提示”</span>；</div>
+            <div style="margin-bottom:8px;">④ 综合以上信息，依次完成<span class="highlight">两次主观评价</span>；</div>
+            <div>⑤ 部分道路场景会再次出现，但每次对应的助手状态或提示信息可能不同，请按照当前信息独立作答。</div>
+          </div>
+        </div>
+        <div style="margin-top:20px;"><button id="formal-start" class="continue-btn">开始正式体验</button></div>
+      </div>`,
+      data:{Event_Type:'Formal_Instruction'},
+      on_load:function(){
+        document.getElementById('formal-start').addEventListener('click',()=>{
+          if(formalStartedAtMs===null) formalStartedAtMs=Date.now();
+          jsPsych.finishTrial();
+        });
+      }
+    };
+  }
+
+  function createRestNode(){
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box" style="text-align:left;">
+          <div class="guide-title" style="color:var(--green);">已经完成一半，请休息片刻</div>
+          <div style="font-size:21px;line-height:1.85;color:#ddd;">您已经完成一半的道路体验，请适当放松眼睛和身体。<br><br>继续后操作方式不变：查看当前路况、助手状态和助手提示，再完成两次主观评价。</div>
+        </div>
+        <div style="margin-top:22px;"><button id="rest-continue" class="continue-btn">继续实验</button></div>
+      </div>`,
+      data:{Event_Type:'Rest_Break'},
+      on_load:()=>document.getElementById('rest-continue').addEventListener('click',()=>jsPsych.finishTrial())
+    };
+  }
+
+  function createRatingTrialNode(trialData,isFormal=true){
+    const q1='我完全信任这款智驾助手';
+    const q2='在当前路况下，我愿意选择这款智驾助手完成这段行程';
+    const buttons=[1,2,3,4,5].map(n=>`<button class="rating-option" data-score="${n}" disabled>${n}</button>`).join('');
+
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="trial-shell">
+        <div class="trial-header">
+          <span>${isFormal?`正式体验 ${trialData.formalOrder} / 24`:trialData.practiceLabel}</span>
+          <span>${isFormal?'请根据当前信息独立判断':'练习不计入正式结果'}</span>
+        </div>
+        <div class="scene-zone">${renderSceneImage(trialData.image)}</div>
+        <div class="assistant-zone">${renderAssistantInfo(trialData,isFormal)}</div>
+        <div class="rating-zone">
+          <div class="rating-topline">
+            <div id="rating-progress" class="rating-progress">第 1 题 / 共 2 题</div>
+            <button id="rating-back" class="rating-back hidden-visibility" type="button">返回上一题</button>
+          </div>
+          <div id="rating-question" class="rating-question">${q1}</div>
+          <div class="rating-options">${buttons}</div>
+          <div class="rating-anchors"><span>1 非常不赞同</span><span>3 一般</span><span>5 非常赞同</span></div>
+          <button id="rating-confirm" class="rating-confirm" disabled>确认并继续</button>
+        </div>
+      </div>`,
+      on_load:function(){
+        let totalStart=null;
+        let phase=1;
+        let phaseStart=null;
+        let trustDraft=null,coopDraft=null;
+        let trustScore=null,coopScore=null;
+        let trustRT=0,coopRT=0;
+        let backToQ1Count=0;
+
+        const shell=document.querySelector('.trial-shell');
+        const options=Array.from(document.querySelectorAll('.rating-option'));
+        const confirm=document.getElementById('rating-confirm');
+        const back=document.getElementById('rating-back');
+        const q=document.getElementById('rating-question');
+        const progress=document.getElementById('rating-progress');
+        const sceneImg=document.getElementById('scene-image');
+        const sceneHint=document.getElementById('scene-load-hint');
+        const imagePath=sceneImg?sceneImg.dataset.src:`img/${trialData.image}`;
+        let sceneReady=false;
+        let resizeObserver=null;
+
+        function elementIsClipped(el){
+          if(!el) return false;
+          return (el.scrollHeight-el.clientHeight>2)||(el.scrollWidth-el.clientWidth>2);
+        }
+        function enableAdaptiveLayoutIfNeeded(){
+          if(!shell || shell.classList.contains('adaptive-scroll')) return;
+          const viewportH=window.visualViewport?window.visualViewport.height:window.innerHeight;
+          const clipped=Array.from(shell.children).some(elementIsClipped) || elementIsClipped(q);
+          if(clipped || shell.scrollHeight>viewportH+3) shell.classList.add('adaptive-scroll');
+        }
+        requestAnimationFrame(()=>requestAnimationFrame(enableAdaptiveLayoutIfNeeded));
+        if('ResizeObserver' in window && shell){
+          resizeObserver=new ResizeObserver(enableAdaptiveLayoutIfNeeded);
+          resizeObserver.observe(shell);
+          Array.from(shell.children).forEach(x=>resizeObserver.observe(x));
+        }
+
+        function enableRatingsAfterImage(){
+          if(sceneReady) return;
+          sceneReady=true;
+          totalStart=Date.now();
+          phaseStart=totalStart;
+          scenePreloader.markLoaded(imagePath);
+          if(sceneHint) sceneHint.style.display='none';
+          options.forEach(btn=>btn.disabled=false);
+          requestAnimationFrame(enableAdaptiveLayoutIfNeeded);
+        }
+        function showImageError(error){
+          sceneReady=false;
+          options.forEach(btn=>btn.disabled=true);
+          confirm.disabled=true;
+          if(sceneHint){
+            sceneHint.style.display='flex';
+            sceneHint.style.color='var(--warning)';
+            sceneHint.innerText='当前驾驶场景暂未加载成功，正在重试…';
+          }
+          console.error('trial image load error',imagePath,error);
+          setTimeout(requestCurrentImage,1800);
+        }
+        function attachActualImage(){
+          if(!sceneImg || sceneReady) return;
+          sceneImg.addEventListener('load',enableRatingsAfterImage,{once:true});
+          sceneImg.addEventListener('error',showImageError,{once:true});
+          sceneImg.src=imagePath;
+          if(sceneImg.complete && sceneImg.naturalWidth>0) enableRatingsAfterImage();
+        }
+        function requestCurrentImage(){
+          if(!sceneImg || sceneReady) return;
+          if(scenePreloader.isLoaded(imagePath)){ attachActualImage(); return; }
+          if(sceneHint){sceneHint.style.display='flex';sceneHint.innerText='正在准备当前驾驶场景，请稍候…';}
+          scenePreloader.whenLoaded(imagePath,attachActualImage,attachActualImage);
+        }
+        requestCurrentImage();
+
+        function setSelected(score){
+          options.forEach(btn=>btn.classList.toggle('selected',Number(btn.dataset.score)===score));
+          confirm.disabled=score===null;
+        }
+        options.forEach(btn=>btn.addEventListener('click',()=>{
+          const score=Number(btn.dataset.score);
+          if(phase===1) trustDraft=score; else coopDraft=score;
+          setSelected(score);
+        }));
+
+        back.addEventListener('click',()=>{
+          if(phase!==2) return;
+          // 第二题尚未最终提交，因此允许返回修正第一题。
+          // 返回后第一题 RT 重新计时，以最终确认答案为准。
+          coopDraft=null;
+          backToQ1Count++;
+          phase=1;
+          q.innerText=q1;
+          progress.innerText='第 1 题 / 共 2 题';
+          back.classList.add('hidden-visibility');
+          phaseStart=Date.now();
+          setSelected(trustDraft);
+        });
+
+        confirm.addEventListener('click',()=>{
+          if(phase===1){
+            if(trustDraft===null) return;
+            trustScore=trustDraft;
+            trustRT=Date.now()-phaseStart;
+            phase=2;
+            q.innerText=q2;
+            progress.innerText='第 2 题 / 共 2 题';
+            back.classList.remove('hidden-visibility');
+            phaseStart=Date.now();
+            setSelected(coopDraft);
+            requestAnimationFrame(enableAdaptiveLayoutIfNeeded);
+          }else{
+            if(coopDraft===null) return;
+            coopScore=coopDraft;
+            coopRT=Date.now()-phaseStart;
+            if(resizeObserver) resizeObserver.disconnect();
+
+            const imageBase=String(trialData.image||'').replace(/\.[^.]+$/,'');
+            const imageNumber=(String(trialData.image||'').match(/(\d+)/)||[])[1]||'';
+
+            jsPsych.finishTrial({
+              Event_Type:isFormal?'Formal_Trial':'Practice_Trial',
+              Subject_ID:currentSubjectId,
+              Session_UUID:sessionUUID,
+              Age_Group:AGE_GROUP,
+              DataPipe_Condition:dataPipeCondition,
+              Version:currentVersion,
+              Sequence:SEQUENCE_NAME,
+              Formal_Trial_Order:isFormal?trialData.formalOrder:0,
+              Block:isFormal?trialData.block:0,
+              Block_Position:isFormal?trialData.blockPosition:0,
+              Image_Number:imageNumber,
+              Image_ID:imageBase,
+              Image_File:trialData.image,
+              Scene_ID:trialData.sceneId,
+              Scene_Name:trialData.sceneName,
+              Risk_Level:isFormal?trialData.risk:'Practice',
+              Assistant_Label:isFormal?trialData.assistantLabel:'Practice',
+              Config_Code:trialData.config.code,
+              Config_Type:trialData.config.key,
+              Config_Name_CN:trialData.config.internalName,
+              Attribute_Dimension:trialData.config.dimension,
+              Attribute_Level:trialData.config.level,
+              Attribute_Level_Numeric:trialData.config.levelNumeric,
+              Manipulation_Text:trialData.manipulationText,
+              Trust_Score:trustScore,
+              Trust_RT_ms:trustRT,
+              Cooperation_Score:coopScore,
+              Cooperation_RT_ms:coopRT,
+              Back_to_Q1_Count:backToQ1Count,
+              Total_Trial_Time_ms:totalStart===null?null:Date.now()-totalStart,
+              Baseline_Ability_Points:baselineAbility,
+              Baseline_Emotion_Points:baselineEmotion,
+              Browser_Context:getBrowserContext(),
+              User_Agent:navigator.userAgent||'',
+              Image_Format:IMAGE_FORMAT
+            });
+          }
+        });
+      }
+    };
+  }
+
+  /* =========================================================
+     9. 被试编号与启动
+     ========================================================= */
+  function getParticipantIdFromURL(){
+    const params=new URLSearchParams(window.location.search);
+    const pid=(params.get('pid')||'').trim();
+    return /^[A-Za-z0-9_-]{1,30}$/.test(pid)?pid:'';
+  }
+  function applyParticipantIdFromURL(){
+    const pid=getParticipantIdFromURL();
+    if(!pid) return;
+    const input=document.getElementById('subject-id-input');
+    if(input){input.value=pid;input.readOnly=true;input.style.opacity='0.92';}
+    const info=document.getElementById('login-info');
+    if(info) info.innerHTML=`已从前置页面自动识别实验编号：<b style="color:#fff;">${pid}</b><br><span style="font-size:13px;color:#8f9aa5;">请确认后点击“进入体验”。</span>`;
+  }
+  applyParticipantIdFromURL();
+
+  document.getElementById('login-btn').addEventListener('click',startExperiment);
+
+  async function startExperiment(){
+    const inputVal=document.getElementById('subject-id-input').value.trim();
+    if(!inputVal || !/^[A-Za-z0-9_-]{1,30}$/.test(inputVal)){
+      alert('请输入有效的实验编号（仅使用字母、数字、下划线或短横线）。');
+      return;
+    }
+    currentSubjectId=inputVal;
+
+    const startButton=document.getElementById('login-btn');
+    const originalButtonText=startButton.innerText;
+    startButton.disabled=true;
+    startButton.innerText='正在连接实验服务器…';
+
+    try{
+      dataPipeCondition=await getDataPipeCondition();
+    }catch(error){
+      console.error(error);
+      startButton.disabled=false;
+      startButton.innerText=originalButtonText;
+      if(DATAPIPE_REQUIRED){
+        alert('暂时无法连接实验服务器或获取实验条件，请检查网络后重试。\n\n'+(error.message||error));
+        return;
+      }
+      dataPipeCondition=0;
+    }
+
+    riskGroup=dataPipeCondition===0?'Low':'High';
+    currentVersion=`Exp1b_Adult_DP${dataPipeCondition}_${riskGroup}_${SEQUENCE_NAME}`;
+
+    jsPsych.data.addProperties({
+      Subject_ID:currentSubjectId,
+      Session_UUID:sessionUUID,
+      Age_Group:AGE_GROUP,
+      DataPipe_Condition:dataPipeCondition,
+      Version:currentVersion,
+      Sequence:SEQUENCE_NAME,
+      Risk_Level:riskGroup,
+      Browser_Context:getBrowserContext(),
+      User_Agent:navigator.userAgent||'',
+      Image_Format:IMAGE_FORMAT
+    });
+
+    experimentStartedAtMs=Date.now();
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('jspsych-target').innerHTML='';
+
+    const formalTrials=buildFormalTrials();
+
+    // 两个练习使用同一张拥堵图片，只改变状态类型与助手提示。
+    const practiceAbility={
+      image:'test.webp', sceneId:0, sceneName:'练习拥堵场景', practiceLabel:'练习 1 / 2',
+      config:{key:'PracticeAbility',code:'PRA',dimension:'Ability',level:'Practice',levelNumeric:2,internalName:'能力练习'},
+      manipulationText:'当前道路出现拥堵，系统已根据前方车流调整车速与车距，保持车辆平稳行驶。'
+    };
+    const practiceEmotion={
+      image:'test.webp', sceneId:0, sceneName:'练习拥堵场景', practiceLabel:'练习 2 / 2',
+      config:{key:'PracticeEmotion',code:'PRE',dimension:'Emotion',level:'Practice',levelNumeric:2,internalName:'情感练习'},
+      manipulationText:'当前道路有些拥堵，我已经调整好车速。您现在感觉还好吗？如果有需要，请告诉我。'
+    };
+
+    // 仅加载该被试风险组真正会使用的6张正式图 + 1张练习图。
+    const uniqueFormalImages=[...new Set(formalTrials.map(t=>`img/${t.image}`))];
+    const scenePriorityQueue=['img/test.webp',...uniqueFormalImages];
+    scenePreloader.start(scenePriorityQueue);
+
+    const timeline=[];
+    timeline.push(createWelcomeNode());
+    timeline.push(createAllocationNode());
+    timeline.push(createAssistantIntroNode());
+    timeline.push(createPracticeInstructionNode());
+    timeline.push(createRatingTrialNode(practiceAbility,false));
+    timeline.push(createRatingTrialNode(practiceEmotion,false));
+    timeline.push(createFormalResourceGateNode(scenePriorityQueue));
+    timeline.push(createFormalInstructionNode());
+
+    formalTrials.forEach((trial,i)=>{
+      timeline.push(createRatingTrialNode(trial,true));
+      if(i===11) timeline.push(createRestNode());
+    });
+
+    jsPsych.run(timeline);
+  }
+
+</script>
+</body>
+</html>
