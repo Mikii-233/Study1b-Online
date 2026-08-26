@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>实验1b｜机器人驾车游戏（儿童版）</title>
+
+  <!-- 与成人1b / 实验3a保持相同的本地 jsPsych 目录结构 -->
+  <script src="../jspsych/jspsych.js"></script>
+  <script src="../plugins/plugin-html-keyboard-response.js"></script>
+  <link rel="stylesheet" href="../jspsych/jspsych.css">
+
+  <style>
+    :root{
+      --bg:#1e1e24;
+      --panel:#2b2b36;
+      --panel-deep:#15151a;
+      --line:#484854;
+      --text:#f1f1f3;
+      --muted:#b6c0cb;
+      --blue:#64b5f6;
+      --green:#4CAF50;
+      --orange:#FF9800;
+      --warning:#ffca7a;
+      --soft:#343442;
+    }
+
+    *{box-sizing:border-box;}
+    html,body{
+      width:100%; min-height:100%; margin:0; padding:0;
+      background:var(--bg); color:var(--text);
+      font-family:"Microsoft YaHei","PingFang SC",sans-serif;
+      overflow-x:hidden; overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      -webkit-text-size-adjust:100%; text-size-adjust:100%;
+      user-select:none;
+    }
+    button,input{touch-action:manipulation;font-family:inherit;}
+    button{-webkit-tap-highlight-color:transparent;}
+    .hidden{display:none!important;}
+
+    #preload-screen,#login-screen,#jspsych-target{width:100%;min-height:100dvh;}
+    .jspsych-display-element{background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden;overflow-y:auto;}
+    .jspsych-content-wrapper{width:100%;min-height:100dvh;height:auto;padding:0;justify-content:center;align-items:center;}
+    .jspsych-content{width:100%;max-width:none;}
+
+    .fullscreen-container{
+      width:100%; min-height:100dvh; height:auto;
+      display:flex; flex-direction:column; justify-content:center; align-items:center;
+      padding:18px 0; box-sizing:border-box;
+    }
+    .guide-box{
+      width:min(900px,92vw); background:var(--panel); border:1px solid var(--line);
+      border-radius:16px; padding:30px 38px; font-size:20px; line-height:1.75;
+      text-align:left;
+    }
+    .guide-title{text-align:center;color:var(--blue);font-size:31px;font-weight:900;margin-bottom:20px;}
+    .context-box{
+      background:#383846;border-left:5px solid var(--warning);border-radius:8px;
+      padding:16px 20px;margin-bottom:17px;font-size:19px;line-height:1.7;
+    }
+    .child-tip{
+      background:#242631;border:1px solid #4c5261;border-radius:10px;
+      padding:13px 16px;line-height:1.65;color:#e6edf4;margin:12px 0;
+    }
+    .highlight{color:var(--warning);font-weight:900;}
+    .ability-text{color:var(--green);font-weight:900;}
+    .emotion-text{color:var(--orange);font-weight:900;}
+
+    .continue-btn,.action-btn,.login-btn{
+      min-width:180px;min-height:54px;padding:11px 28px;border:0;border-radius:12px;
+      background:var(--green);color:white;font-size:19px;font-weight:900;cursor:pointer;
+    }
+    .continue-btn:disabled,.action-btn:disabled{opacity:.38;cursor:not-allowed;}
+
+    /* ---------- 主试资源准备页：儿童到场前先完成全部资源加载 ---------- */
+    .preload-box{
+      width:min(780px,92vw);background:var(--panel);border:1px solid var(--line);
+      border-radius:16px;padding:30px 34px;text-align:center;
+    }
+    .preload-title{color:var(--blue);font-weight:900;font-size:30px;margin-bottom:14px;}
+    .preload-note{color:#e8edf2;font-size:17px;line-height:1.7;margin:0 auto 18px;max-width:650px;}
+    .resource-summary{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:12px 0 16px;}
+    .resource-pill{background:#232630;border:1px solid #4b5360;border-radius:999px;padding:7px 12px;color:#dbe4ec;font-size:13px;}
+    .preload-track{width:min(620px,82vw);height:16px;margin:16px auto 8px;background:#17191f;border:1px solid #555d69;border-radius:999px;overflow:hidden;}
+    .preload-bar{height:100%;width:0%;background:var(--green);transition:width .2s ease;}
+    .preload-count{font-size:22px;font-weight:900;margin-top:10px;color:white;}
+    .preload-current{min-height:22px;margin-top:7px;color:var(--muted);font-size:13px;word-break:break-all;}
+    .preload-failed{display:none;width:min(650px,84vw);max-height:150px;overflow:auto;margin:14px auto 0;padding:10px 12px;background:#34231f;border:1px solid #8d5748;border-radius:9px;color:#ffd1c7;font-size:12px;line-height:1.55;text-align:left;user-select:text;}
+    .preload-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px;}
+    .retry-btn{min-width:170px;min-height:48px;padding:9px 16px;border:0;border-radius:10px;background:#b56a2e;color:white;font-size:16px;font-weight:900;cursor:pointer;display:none;}
+
+    /* ---------- 登录 ---------- */
+    .login-box{
+      width:min(560px,92vw);background:var(--panel);border:1px solid var(--line);
+      border-radius:16px;padding:34px 30px;text-align:center;
+    }
+    .login-title{color:var(--blue);font-weight:900;font-size:29px;margin-bottom:14px;}
+    .login-sub{color:var(--muted);font-size:15px;line-height:1.65;margin-bottom:17px;}
+    .login-input{
+      width:min(360px,80vw);background:var(--panel-deep);color:white;border:2px solid var(--blue);
+      border-radius:10px;padding:12px;font-size:20px;text-align:center;outline:none;margin-bottom:14px;
+    }
+
+    /* ---------- 升级星星 ---------- */
+    .star-allocation-wrap{display:flex;gap:18px;justify-content:center;align-items:stretch;margin:18px 0 12px;}
+    .star-card{
+      flex:1 1 0;max-width:350px;min-width:0;padding:17px 14px;border-radius:14px;
+      background:var(--panel-deep);border:1px solid var(--line);text-align:center;
+    }
+    .star-card.ability{border-top:5px solid var(--green);}
+    .star-card.emotion{border-top:5px solid var(--orange);}
+    .star-title{font-size:22px;font-weight:900;margin-bottom:5px;}
+    .star-desc{font-size:14px;line-height:1.45;color:var(--muted);min-height:42px;}
+    .star-display{
+      min-height:56px;display:flex;flex-wrap:wrap;gap:3px;justify-content:center;align-content:center;
+      font-size:27px;margin:10px 0;color:#ffd54f;text-shadow:0 0 6px rgba(255,213,79,.18);
+    }
+    .star-count{font-size:16px;font-weight:900;color:#ffd97b;margin-bottom:7px;}
+    .allocation-controls{display:flex;justify-content:center;gap:14px;}
+    .mini-btn{
+      width:62px;height:48px;border-radius:10px;border:1px solid #666;background:#383846;
+      color:white;font-size:28px;font-weight:900;cursor:pointer;
+    }
+    .mini-btn:disabled{opacity:.3;cursor:not-allowed;}
+
+    /* ---------- 四助手介绍 ---------- */
+    .assistant-intro-grid{width:min(980px,94vw);display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .assistant-intro-card{
+      background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px 15px;
+      display:grid;grid-template-columns:78px 1fr;gap:12px;align-items:center;
+    }
+    .avatar-box{
+      width:78px;height:78px;border-radius:14px;background:#20212a;border:1px solid #4b4b56;
+      display:flex;align-items:center;justify-content:center;overflow:hidden;flex:0 0 auto;
+    }
+    .avatar-box img{width:90%;height:90%;object-fit:contain;display:block;}
+    .avatar-fallback{display:none;align-items:center;justify-content:center;font-size:44px;width:100%;height:100%;}
+    .assistant-intro-title{font-size:20px;font-weight:900;margin-bottom:6px;}
+    .state-row{display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
+    .state-label{font-size:16px;font-weight:900;}
+    .energy-bars{display:flex;gap:7px;align-items:center;}
+    .energy-cell{
+      width:54px;height:19px;border-radius:6px;border:2px solid #717985;
+      background:rgba(255,255,255,.04);
+    }
+    .energy-cell.ability.on{background:var(--green);border-color:var(--green);box-shadow:0 0 8px rgba(76,175,80,.3);}
+    .energy-cell.emotion.on{background:var(--orange);border-color:var(--orange);box-shadow:0 0 8px rgba(255,152,0,.3);}
+
+    /* ---------- 正式trial ---------- */
+    .trial-shell{
+      width:100%;height:100dvh;min-height:100dvh;display:flex;flex-direction:column;
+      overflow:hidden;background:var(--bg);
+    }
+    .trial-header{
+      flex:0 0 5%;min-height:38px;background:var(--panel-deep);border-bottom:1px solid #333;
+      display:flex;align-items:center;justify-content:space-between;padding:4px clamp(12px,4vw,46px);
+      color:var(--muted);font-size:clamp(12px,1vw,15px);
+    }
+    .scene-zone{
+      flex:0 0 31%;min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      background:var(--panel-deep);padding:4px 0 6px;
+    }
+    .scene-image-frame{
+      position:relative;width:min(94vw,700px);aspect-ratio:637/315;max-height:100%;
+      border-radius:9px;overflow:hidden;background:#101116;box-shadow:0 4px 15px rgba(0,0,0,.45);
+      display:flex;align-items:center;justify-content:center;
+    }
+    .scene-image{width:100%;height:100%;object-fit:contain;display:block;}
+    .scene-load-hint{
+      position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:14px;
+      text-align:center;color:var(--muted);background:#101116;font-size:15px;z-index:2;
+    }
+    .scene-cue{
+      margin-top:5px;padding:4px 10px;border-radius:999px;background:#22242c;color:#d7dee6;
+      font-size:13px;line-height:1.35;text-align:center;
+    }
+
+    .assistant-zone{
+      flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:var(--bg);
+      border-top:1px solid #35353e;border-bottom:1px solid #45454e;padding:7px 10px;
+    }
+    .assistant-info-card{
+      width:min(900px,94vw);background:var(--panel);border:1px solid #4b4b56;border-radius:13px;
+      padding:9px 14px 11px;
+    }
+    .assistant-badge{font-size:18px;font-weight:900;text-align:center;margin-bottom:5px;}
+    .assistant-info-main{width:100%;display:grid;grid-template-columns:135px minmax(0,1fr);gap:14px;align-items:center;}
+    .assistant-left-stack{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;}
+    .formal-state-row{display:flex;flex-direction:column;align-items:center;gap:4px;}
+    .formal-state-label{font-size:15px;font-weight:900;text-align:center;}
+    .assistant-info-card .avatar-box{width:78px;height:78px;}
+    .assistant-prompt-wrap{min-width:0;display:flex;align-items:center;gap:10px;}
+    .speech-bubble{
+      position:relative;flex:1 1 auto;background:#20212a;border:1px solid #555b67;border-radius:11px;
+      padding:9px 12px;font-size:16px;line-height:1.48;color:#f0f0f0;overflow-wrap:anywhere;
+    }
+    .speech-bubble::before{
+      content:'';position:absolute;left:-8px;top:50%;width:14px;height:14px;background:#20212a;
+      border-left:1px solid #555b67;border-bottom:1px solid #555b67;transform:translateY(-50%) rotate(45deg);
+    }
+    .prompt-inline-label{font-weight:900;color:#dce6f0;}
+    .audio-btn{
+      flex:0 0 auto;min-width:126px;min-height:48px;border:0;border-radius:12px;background:#4b6f91;
+      color:white;font-size:16px;font-weight:900;padding:8px 12px;cursor:pointer;
+    }
+    .audio-btn.playing{background:#5b6470;}
+    .audio-btn:disabled{opacity:.45;cursor:not-allowed;}
+    .audio-status{font-size:12px;color:var(--muted);text-align:center;margin-top:4px;min-height:16px;}
+
+    /* ---------- 图形化5点评分 ---------- */
+    .rating-zone{
+      flex:1 1 auto;min-height:205px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      background:var(--panel);padding:8px 8px calc(8px + env(safe-area-inset-bottom));overflow:hidden;
+    }
+    .rating-topline{width:min(780px,94vw);display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:29px;}
+    .rating-progress{color:#aab4be;font-size:13px;}
+    .rating-back{
+      border:1px solid #666;border-radius:8px;background:#1f2028;color:#d2d9e0;min-height:35px;
+      padding:5px 10px;font-size:12px;cursor:pointer;
+    }
+    .rating-back.hidden-visibility{visibility:hidden;pointer-events:none;}
+    .rating-question{
+      width:min(820px,94vw);text-align:center;font-size:clamp(20px,1.55vw,28px);line-height:1.35;
+      font-weight:900;margin:4px 0 9px;color:#f5f5f5;
+    }
+    .rating-options{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;width:min(760px,94vw);}
+    .rating-option{
+      min-width:0;min-height:66px;border-radius:12px;border:2px solid #59616d;background:#1f2028;
+      display:flex;align-items:center;justify-content:center;cursor:pointer;
+    }
+    .rating-option:disabled{opacity:.25;cursor:not-allowed;}
+    .rating-option.selected{border-color:var(--green);background:rgba(76,175,80,.14);box-shadow:0 0 0 2px rgba(76,175,80,.12) inset;}
+    .circle-scale{
+      --fill:0%;width:43px;height:43px;border-radius:50%;border:3px solid #d8e1ea;
+      background:linear-gradient(to right,var(--blue) 0 var(--fill),transparent var(--fill) 100%);
+      box-shadow:0 0 0 1px rgba(0,0,0,.2) inset;
+    }
+    .rating-anchors{
+      width:min(760px,94vw);display:grid;grid-template-columns:1fr 1fr;margin-top:5px;
+      color:#d0d7df;font-size:14px;font-weight:800;
+    }
+    .rating-anchors span:first-child{text-align:left;}
+    .rating-anchors span:last-child{text-align:right;}
+    .rating-help{font-size:12px;color:#9faab5;margin-top:3px;text-align:center;}
+    .rating-confirm{
+      margin-top:7px;min-width:160px;min-height:44px;border:0;border-radius:10px;background:var(--green);
+      color:white;font-size:16px;font-weight:900;cursor:pointer;
+    }
+    .rating-confirm:disabled{opacity:.38;cursor:not-allowed;}
+
+    /* ---------- 资源进度 ---------- */
+    .progress-track{width:min(620px,80vw);margin:22px auto 8px;height:14px;background:var(--panel-deep);border:1px solid #555;border-radius:999px;overflow:hidden;}
+    .progress-bar{height:100%;width:0%;background:var(--green);transition:width .25s ease;}
+
+    @media(max-width:900px){
+      .guide-box{width:94vw;padding:23px;font-size:18px;}
+      .guide-title{font-size:27px;}
+      .assistant-intro-grid{width:94vw;gap:9px;}
+      .assistant-intro-card{grid-template-columns:68px 1fr;padding:10px;}
+      .avatar-box{width:64px;height:64px;}
+      .energy-cell{width:42px;height:17px;}
+      .assistant-info-card{width:96vw;}
+      .assistant-info-main{grid-template-columns:118px minmax(0,1fr);gap:10px;}
+      .audio-btn{min-width:112px;}
+    }
+
+    /* 平板优先：儿童正式实验建议使用平板 */
+    @media(max-width:700px){
+      html,body,#preload-screen,#login-screen,#jspsych-target,.jspsych-display-element{min-height:100svh;}
+      .jspsych-content-wrapper{min-height:100svh;height:auto;align-items:flex-start;}
+      .fullscreen-container{min-height:100svh;height:auto;justify-content:flex-start;padding:12px 0 calc(14px + env(safe-area-inset-bottom));}
+      #preload-screen.fullscreen-container,#login-screen.fullscreen-container{justify-content:center;}
+
+      .guide-box{width:93vw;padding:15px 14px;font-size:15.5px;line-height:1.58;}
+      .guide-title{font-size:23px;margin-bottom:11px;}
+      .context-box{padding:10px 12px;font-size:15px;line-height:1.52;margin-bottom:10px;}
+      .child-tip{font-size:14px;padding:9px 10px;margin:8px 0;}
+      .continue-btn,.action-btn,.login-btn{min-height:48px;min-width:150px;font-size:16px;padding:8px 16px;}
+
+      .star-allocation-wrap{width:100%;gap:7px;margin:10px 0;}
+      .star-card{padding:9px 6px;}
+      .star-title{font-size:17px;}
+      .star-desc{font-size:11.5px;min-height:35px;}
+      .star-display{font-size:21px;min-height:46px;margin:5px 0;gap:1px;}
+      .star-count{font-size:13px;margin-bottom:5px;}
+      .mini-btn{width:48px;height:42px;font-size:23px;}
+
+      .assistant-intro-grid{grid-template-columns:1fr 1fr;width:93vw;gap:6px;}
+      .assistant-intro-card{grid-template-columns:48px 1fr;gap:6px;padding:7px 6px;border-radius:9px;}
+      .assistant-intro-card .avatar-box{width:46px;height:46px;border-radius:9px;}
+      .assistant-intro-title{font-size:13px;margin-bottom:3px;}
+      .state-label{font-size:11px;}
+      .energy-bars{gap:3px;}
+      .energy-cell{width:24px;height:10px;border-width:1.5px;border-radius:3px;}
+
+      .trial-shell{height:100svh;min-height:100svh;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;}
+      .trial-header{flex:0 0 5%;min-height:33px;padding:3px 8px;font-size:10.5px;}
+      .scene-zone{flex:0 0 29%;min-height:158px;padding:3px 0 4px;}
+      .scene-image-frame{width:96vw;max-width:637px;}
+      .scene-cue{font-size:11.5px;margin-top:3px;padding:3px 8px;}
+
+      .assistant-zone{padding:5px 5px;}
+      .assistant-info-card{width:96vw;padding:6px 7px 8px;border-radius:10px;}
+      .assistant-badge{font-size:13px;margin-bottom:3px;}
+      .assistant-info-main{grid-template-columns:78px minmax(0,1fr);gap:6px;align-items:center;}
+      .formal-state-label{font-size:11.5px;}
+      .assistant-left-stack{gap:3px;}
+      .assistant-info-card .energy-cell{width:25px;height:10px;}
+      .assistant-info-card .avatar-box{width:54px;height:54px;border-radius:9px;}
+      .assistant-prompt-wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:5px;}
+      .speech-bubble{width:100%;padding:7px 9px;font-size:12.2px;line-height:1.42;border-radius:9px;}
+      .speech-bubble::before{left:-6px;width:11px;height:11px;}
+      .audio-btn{width:100%;min-width:0;min-height:42px;font-size:14px;border-radius:9px;}
+      .audio-status{font-size:10.5px;margin-top:1px;}
+
+      .rating-zone{flex:1 0 auto;min-height:205px;padding:5px 4px calc(6px + env(safe-area-inset-bottom));}
+      .rating-topline{width:95vw;min-height:28px;}
+      .rating-progress{font-size:10.5px;}
+      .rating-back{min-height:31px;font-size:10px;padding:4px 6px;}
+      .rating-question{width:94vw;font-size:15.5px;line-height:1.35;margin:1px 0 5px;}
+      .rating-options{width:94vw;gap:5px;}
+      .rating-option{min-height:54px;border-radius:8px;padding:0;}
+      .circle-scale{width:34px;height:34px;border-width:2.5px;}
+      .rating-anchors{width:94vw;font-size:11.5px;}
+      .rating-help{font-size:10.5px;}
+      .rating-confirm{min-height:39px;margin-top:4px;font-size:14px;}
+    }
+
+    /* ---------- 平板横屏优先 ---------- */
+    @media (min-width:700px) and (orientation:landscape){
+      .preload-box{width:min(880px,88vw);padding:24px 34px;}
+      .trial-shell{height:100dvh;min-height:100dvh;}
+      .scene-zone{min-height:0;}
+      .scene-image-frame{max-width:min(58vw,760px);}
+    }
+    @media (min-width:700px) and (orientation:portrait){
+      #tablet-orientation-tip{display:block!important;}
+    }
+
+
+    /* =========================================================
+       v4：平板横屏视觉优化
+       ========================================================= */
+
+    #orientation-overlay{
+      display:none;position:fixed;inset:0;z-index:999999;
+      background:rgba(20,20,26,.97);align-items:center;justify-content:center;
+      padding:30px;text-align:center;
+    }
+    .orientation-card{
+      width:min(620px,88vw);background:var(--panel);border:1px solid var(--line);
+      border-radius:18px;padding:30px;color:white;
+    }
+    @media (min-width:700px) and (orientation:portrait){
+      #orientation-overlay{display:flex;}
+    }
+
+    /* 欢迎页：机器人 + 两种信息直观展示 */
+    .welcome-visual{
+      display:grid;grid-template-columns:150px minmax(0,1fr);gap:22px;align-items:center;
+      background:#22242d;border:1px solid #4b5260;border-radius:14px;
+      padding:16px 18px;margin:14px 0 16px;
+    }
+    .welcome-robot{display:flex;align-items:center;justify-content:center;}
+    .welcome-robot .avatar-box{width:118px;height:118px;}
+    .feature-stack{display:flex;flex-direction:column;gap:12px;}
+    .feature-row{
+      display:grid;grid-template-columns:120px 122px minmax(0,1fr);
+      gap:12px;align-items:center;padding:10px 12px;border-radius:11px;background:#191b22;
+      border:1px solid #404653;
+    }
+    .feature-name{font-size:19px;font-weight:900;}
+    .feature-explain{font-size:15px;line-height:1.5;color:#d8e0e8;}
+    .feature-row .energy-cell{width:50px;height:18px;}
+
+    /* 星星任务：机器人居中 + 两个功能视觉化 */
+    .allocation-robot-panel{
+      display:grid;grid-template-columns:100px minmax(0,1fr);gap:15px;align-items:center;
+      width:min(660px,92%);margin:10px auto 12px;padding:11px 14px;
+      background:#22242d;border:1px solid #4b5260;border-radius:12px;
+    }
+    .allocation-robot-panel .avatar-box{width:88px;height:88px;}
+    .allocation-robot-text{font-size:17px;line-height:1.6;color:#e9eef3;}
+    .star-card .mini-feature{
+      display:flex;flex-direction:column;align-items:center;gap:5px;margin:7px 0 2px;
+    }
+    .star-card .mini-feature .energy-cell{width:48px;height:17px;}
+    .allocation-controls{
+      display:grid!important;grid-template-columns:58px 58px;justify-content:center;
+      align-items:center;gap:14px!important;width:100%;
+    }
+    .mini-btn{display:flex;align-items:center;justify-content:center;padding:0;margin:0 auto;}
+
+    /* 四位机器人介绍：显示水平含义 */
+    .assistant-intro-grid{width:min(1040px,94vw);gap:12px;}
+    .assistant-intro-card{
+      grid-template-columns:82px minmax(0,1fr);gap:13px;padding:12px 14px;
+    }
+    .assistant-intro-card .avatar-box{width:74px;height:74px;}
+    .assistant-level-note{
+      margin-top:7px;font-size:14px;font-weight:900;line-height:1.4;
+      color:#e7edf3;
+    }
+
+    /* 练习页的五级图形演示：五个圆大小完全一致 */
+    .scale-demo{width:min(650px,90%);margin:12px auto 4px;}
+    .scale-demo-circles{
+      display:grid;grid-template-columns:repeat(5,1fr);gap:18px;align-items:center;
+    }
+    .scale-demo-item{display:flex;justify-content:center;align-items:center;}
+    .scale-demo-item .circle-scale{width:54px;height:54px;}
+    .scale-demo-labels{
+      display:grid;grid-template-columns:1fr 1fr;margin-top:5px;
+      font-size:13px;color:var(--muted);font-weight:800;
+    }
+    .scale-demo-labels span:first-child{text-align:left;}
+    .scale-demo-labels span:last-child{text-align:right;}
+
+    /* ---------------------------------------------------------
+       正式 trial：以平板横屏为第一目标
+       --------------------------------------------------------- */
+    @media (min-width:900px) and (orientation:landscape){
+      html,body,#jspsych-target,.jspsych-display-element,.jspsych-content-wrapper{
+        width:100%;height:100dvh;min-height:100dvh;overflow:hidden;
+      }
+      .jspsych-content{height:100%;}
+
+      .trial-shell{
+        width:100%;height:100dvh;min-height:100dvh;
+        display:grid;
+        grid-template-rows:38px minmax(0,44fr) minmax(0,18fr) minmax(0,38fr);
+        overflow:hidden;
+      }
+      .trial-header{
+        min-height:0;height:38px;padding:3px 34px;font-size:13px;
+      }
+
+      /* 图片显著放大 */
+      .scene-zone{
+        min-height:0!important;padding:4px 0 3px!important;overflow:hidden;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+      }
+      .scene-image-frame{
+        width:min(82vw,900px)!important;
+        max-width:900px;
+        height:min(calc(100% - 28px),430px)!important;
+        max-height:calc(100% - 28px)!important;
+        aspect-ratio:637/315;
+      }
+      .scene-image{object-fit:contain;}
+      .scene-cue{
+        flex:0 0 auto;margin-top:3px!important;padding:3px 10px!important;
+        font-size:12px!important;line-height:1.2!important;
+      }
+
+      /* 中部信息卡压缩，文字是辅助，语音是主要输入 */
+      .assistant-zone{
+        min-height:0!important;padding:4px 10px!important;overflow:hidden;
+      }
+      .assistant-info-card{
+        width:min(1040px,92vw)!important;padding:6px 12px!important;
+        border-radius:12px;
+      }
+      .assistant-badge{
+        font-size:17px!important;margin-bottom:2px!important;line-height:1.2;
+      }
+      .assistant-info-main{
+        grid-template-columns:118px minmax(0,1fr)!important;
+        gap:10px!important;
+      }
+      .assistant-left-stack{gap:2px!important;}
+      .formal-state-row{gap:2px!important;}
+      .formal-state-label{font-size:14px!important;}
+      .assistant-info-card .energy-cell{width:52px;height:17px;}
+      .assistant-info-card .avatar-box{width:64px!important;height:64px!important;}
+      .assistant-prompt-wrap{gap:9px!important;}
+      .speech-bubble{
+        padding:7px 10px!important;font-size:14px!important;line-height:1.35!important;
+      }
+      .audio-btn{
+        min-width:122px!important;min-height:44px!important;
+        font-size:15px!important;padding:7px 10px!important;
+      }
+      .audio-status{font-size:11px!important;margin-top:2px!important;min-height:13px!important;}
+
+      /* 下部评分：固定在屏内，圆更大，确认按钮不再出框 */
+      .rating-zone{
+        min-height:0!important;height:100%!important;
+        justify-content:flex-start!important;overflow:hidden!important;
+        padding:3px 12px calc(5px + env(safe-area-inset-bottom))!important;
+      }
+      .rating-topline{
+        width:min(940px,92vw)!important;min-height:24px!important;height:24px;
+      }
+      .rating-progress{font-size:12px!important;}
+      .rating-back{
+        min-height:28px!important;height:28px;padding:2px 9px!important;font-size:11px!important;
+      }
+      .rating-question{
+        width:min(980px,94vw)!important;
+        font-size:clamp(19px,1.7vw,24px)!important;
+        line-height:1.2!important;margin:1px 0 5px!important;
+      }
+      .rating-options{
+        width:min(900px,88vw)!important;gap:14px!important;
+      }
+      .rating-option{
+        min-height:70px!important;height:70px!important;border-radius:12px!important;
+      }
+      .circle-scale{
+        width:55px!important;height:55px!important;border-width:3px!important;
+      }
+      .rating-anchors{
+        width:min(900px,88vw)!important;margin-top:3px!important;
+        font-size:13px!important;
+      }
+      .rating-help{
+        font-size:11px!important;margin-top:1px!important;line-height:1.2!important;
+      }
+      .rating-confirm{
+        margin-top:4px!important;min-width:170px!important;
+        min-height:40px!important;height:40px!important;
+        padding:4px 16px!important;font-size:15px!important;
+      }
+    }
+
+    /* 高度较矮的平板浏览器再压缩一点，避免底部被浏览器工具栏遮住 */
+    @media (min-width:900px) and (orientation:landscape) and (max-height:720px){
+      .trial-shell{
+        grid-template-rows:34px minmax(0,42fr) minmax(0,18fr) minmax(0,40fr);
+      }
+      .trial-header{height:34px;}
+      .scene-image-frame{width:min(76vw,790px)!important;}
+      .assistant-info-card .avatar-box{width:56px!important;height:56px!important;}
+      .speech-bubble{font-size:13px!important;}
+      .rating-option{min-height:62px!important;height:62px!important;}
+      .circle-scale{width:49px!important;height:49px!important;}
+      .rating-confirm{min-height:36px!important;height:36px!important;}
+    }
+
+  
+    /* =========================================================
+       V4-scroll：只在 V4 基础上做两件事
+       1. 平板横屏页面允许自然纵向滑动，不再强制锁死在一屏；
+       2. 正式 trial 的评分框缩窄。
+       其余 V4 的字号、图片、机器人卡、指导语布局均保持不变。
+       ========================================================= */
+
+    @media (min-width:900px) and (orientation:landscape){
+
+      /* 解除 V4 对整个页面的固定高度和 overflow:hidden。
+         因此指导语如果超过屏幕，可直接上下滑动看到下面的按钮。 */
+      html,
+      body,
+      #jspsych-target,
+      .jspsych-display-element,
+      .jspsych-content-wrapper{
+        height:auto !important;
+        min-height:100dvh !important;
+        max-height:none !important;
+        overflow-x:hidden !important;
+        overflow-y:auto !important;
+        -webkit-overflow-scrolling:touch;
+      }
+
+      .jspsych-content{
+        height:auto !important;
+        min-height:100dvh !important;
+        overflow:visible !important;
+      }
+
+      /* V4 正式 trial 原来是固定 100dvh 的四行 grid。
+         改成自然高度的纵向结构；内容超出屏幕时由页面滚动。 */
+      .trial-shell{
+        width:100% !important;
+        height:auto !important;
+        min-height:100dvh !important;
+        max-height:none !important;
+        display:flex !important;
+        flex-direction:column !important;
+        overflow:visible !important;
+      }
+
+      .trial-header{
+        flex:0 0 auto !important;
+        height:38px !important;
+        min-height:38px !important;
+      }
+
+      .scene-zone{
+        flex:0 0 auto !important;
+        min-height:0 !important;
+        height:auto !important;
+        overflow:visible !important;
+        padding:10px 0 8px !important;
+      }
+
+      /* 保留 V4 的大图宽度，只取消依赖固定 grid 高度的高度限制。 */
+      .scene-image-frame{
+        width:min(82vw,900px) !important;
+        max-width:900px !important;
+        height:auto !important;
+        max-height:none !important;
+        aspect-ratio:637/315 !important;
+      }
+
+      .scene-cue{
+        flex:0 0 auto !important;
+      }
+
+      .assistant-zone{
+        flex:0 0 auto !important;
+        height:auto !important;
+        min-height:0 !important;
+        overflow:visible !important;
+      }
+
+      /* 评分区域不再占满整行：
+         最大 760px / 约 72vw，居中显示。 */
+      .rating-zone{
+        flex:0 0 auto !important;
+        width:min(760px,72vw) !important;
+        height:auto !important;
+        min-height:0 !important;
+        margin:14px auto 30px !important;
+        padding:12px 16px calc(14px + env(safe-area-inset-bottom)) !important;
+        justify-content:flex-start !important;
+        overflow:visible !important;
+        border:1px solid #484854;
+        border-radius:14px;
+      }
+
+      .rating-topline,
+      .rating-question,
+      .rating-options,
+      .rating-anchors{
+        width:100% !important;
+        max-width:700px !important;
+      }
+
+      .rating-question{
+        margin:5px 0 9px !important;
+      }
+
+      .rating-options{
+        gap:10px !important;
+      }
+
+      .rating-option{
+        min-height:66px !important;
+        height:66px !important;
+      }
+
+      .circle-scale{
+        width:52px !important;
+        height:52px !important;
+      }
+
+      .rating-confirm{
+        margin-top:8px !important;
+        min-height:42px !important;
+        height:42px !important;
+      }
+    }
+
+    /* 较窄的横屏平板只把评分框放宽一点，仍然允许滚动；
+       不再触发 V4 中“为了塞进一屏而整体压缩”的效果。 */
+    @media (min-width:700px) and (max-width:899px) and (orientation:landscape){
+      .trial-shell{
+        height:auto !important;
+        min-height:100svh !important;
+        overflow-y:visible !important;
+      }
+
+      .rating-zone{
+        width:min(720px,86vw) !important;
+        margin:12px auto 28px !important;
+        border-radius:12px;
+      }
+    }
+
+  </style>
+</head>
+<body>
+<div id="orientation-overlay">
+  <div class="orientation-card">
+    <div style="font-size:42px;margin-bottom:10px;">↔️</div>
+    <div style="font-size:25px;font-weight:900;margin-bottom:8px;">请把平板横过来</div>
+    <div style="font-size:16px;color:#d5dde6;line-height:1.6;">本实验按照平板横屏进行设计，横屏后页面会自动恢复。</div>
+  </div>
+</div>
+
+<div id="preload-screen" class="fullscreen-container">
+  <div class="preload-box">
+    <div class="preload-title">实验资源准备</div>
+    <div class="preload-note">
+      <b>请由研究者先完成本页准备，再请儿童开始实验。</b><br>
+      系统会一次性准备机器人头像、练习图、全部高低风险道路图片，以及练习和正式语音。资源全部准备完成后，儿童正式体验过程中不再等待网络加载。
+    </div>
+    <div id="tablet-orientation-tip" style="display:none;margin:0 auto 12px;color:#ffcf8a;font-weight:800;">建议将平板旋转为横屏后再开始实验。</div>
+    <div class="resource-summary">
+      <span class="resource-pill">14 张图片</span>
+      <span class="resource-pill">26 条语音</span>
+      <span class="resource-pill">共 40 个资源</span>
+    </div>
+    <div class="preload-track"><div id="preload-bar" class="preload-bar"></div></div>
+    <div id="preload-count" class="preload-count">资源已准备 0 / 40</div>
+    <div id="preload-current" class="preload-current">正在建立资源清单…</div>
+    <div id="preload-failed" class="preload-failed"></div>
+    <div class="preload-actions">
+      <button id="preload-retry" class="retry-btn" type="button">重新加载失败资源</button>
+      <button id="preload-enter" class="continue-btn" type="button" disabled>资源准备中…</button>
+    </div>
+  </div>
+</div>
+
+<div id="login-screen" class="fullscreen-container hidden">
+  <div class="login-box">
+    <div class="login-title">进入机器人驾车游戏</div>
+    <div id="login-info" class="login-sub">请输入与前面问卷一致的匿名实验编号。这里不用填写姓名。</div>
+    <input id="subject-id-input" class="login-input" type="text" placeholder="实验编号" maxlength="30" autocomplete="off">
+    <br>
+    <button id="login-btn" class="login-btn">进入体验</button>
+  </div>
+</div>
+<div id="jspsych-target"></div>
+
+<script>
+  /* =========================================================
+     实验1b 儿童版 V4-scroll｜V4原版 + 自然滑动
+     ---------------------------------------------------------
+     核心框架：jsPsych
+     推荐设备：平板横屏浏览器
+     风险：2个被试间条件（Low / High）
+     正式顺序：沿用成人1b同一套固定伪随机序列
+     正式试次：24 = 6场景 × 4助手条件
+     儿童化：升级星星 + 标准化语音 + 五级中性圆形评分
+     v2资源策略：儿童到场前一次性预加载 14图片 + 26音频（40/40后才进入）
+     ========================================================= */
+
+  const IMAGE_ROOT='../img';
+  const ROBOT_IMAGE=`${IMAGE_ROOT}/robot.webp`;
+
+  // 儿童版独立 DataPipe Experiment；OSF 母 Project 与成人1b相同，数据写入儿童独立 Component。
+  const DATAPIPE_EXPERIMENT_ID='RiyBOSZSNV81';
+  const DATAPIPE_REQUIRED=true;
+  const DATAPIPE_BASE='https://pipe.jspsych.org/api';
+
+  const SEQUENCE_NAME='FixedSeq_v1';
+  const IMAGE_FORMAT='lossless_webp';
+  const AGE_GROUP='Child';
+  const RATING_FORMAT='PictorialCircle5';
+
+  const PRACTICE_AUDIO_LOW_ABILITY='audio/practice_low_ability.mp3';
+  const PRACTICE_AUDIO_HIGH_EMOTION='audio/practice_high_emotion.mp3';
+
+  let currentSubjectId='';
+  let dataPipeCondition=null;
+  let riskGroup=null;
+  let currentVersion='';
+  let baselineAbility=null;
+  let baselineEmotion=null;
+
+  let experimentStartedAtMs=null;
+  let formalStartedAtMs=null;
+  let experimentEndedAtMs=null;
+  let pageHiddenCount=0;
+  let pageHiddenTotalMs=0;
+  let pageHiddenStartedAtMs=null;
+
+  const sessionUUID=(window.crypto&&crypto.randomUUID)
+    ? crypto.randomUUID()
+    : `fallback-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+  function dataPipeConfigured(){
+    return DATAPIPE_EXPERIMENT_ID && !DATAPIPE_EXPERIMENT_ID.startsWith('REPLACE_');
+  }
+  async function getDataPipeCondition(){
+    if(!dataPipeConfigured()) throw new Error('儿童版 DataPipe experiment ID 尚未配置。');
+    const storageKey=`Exp1bChild_DP_Condition_${currentSubjectId}`;
+    const cached=sessionStorage.getItem(storageKey);
+    if(cached==='0'||cached==='1') return Number(cached);
+    const response=await fetch(`${DATAPIPE_BASE}/condition/`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({experimentID:DATAPIPE_EXPERIMENT_ID})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||typeof result.condition!=='number') throw new Error(result.message||`DataPipe 条件分配失败（HTTP ${response.status}）`);
+    if(result.condition!==0&&result.condition!==1) throw new Error(`收到未预期的条件编号：${result.condition}`);
+    sessionStorage.setItem(storageKey,String(result.condition));
+    return result.condition;
+  }
+  function fallbackConditionFromId(id){
+    return Array.from(String(id)).reduce((s,c)=>s+c.charCodeAt(0),0)%2;
+  }
+  function pad2(n){return String(n).padStart(2,'0');}
+  function pad3(n){return String(n).padStart(3,'0');}
+  function formatLocalTimestamp(date=new Date()){
+    return `${date.getFullYear()}${pad2(date.getMonth()+1)}${pad2(date.getDate())}_${pad2(date.getHours())}${pad2(date.getMinutes())}${pad2(date.getSeconds())}_${pad3(date.getMilliseconds())}`;
+  }
+  function buildUniqueDataFilename(){
+    const safe=String(currentSubjectId).replace(/[^a-zA-Z0-9_-]/g,'_');
+    return `${formatLocalTimestamp()}_Exp1b_Child_Subject${safe}_${riskGroup}.csv`;
+  }
+
+  const CLEAN_CSV_COLUMNS=[
+    'Subject_ID','Session_UUID','Age_Group','DataPipe_Condition','Version','Sequence','Rating_Format',
+    'Formal_Trial_Order','Block','Block_Position',
+    'Image_Number','Image_ID','Image_File','Scene_ID','Scene_Name','Scene_Cue','Risk_Level',
+    'Assistant_Label','Config_Code','Config_Type','Config_Name_CN',
+    'Attribute_Dimension','Attribute_Level','Attribute_Level_Numeric','Manipulation_Text','Audio_File',
+    'Audio_First_Play_RT_ms','Audio_Play_Count','Audio_Replay_Count','Audio_Completed','Audio_Total_Play_Time_ms',
+    'Trust_Score','Trust_RT_ms','Cooperation_Score','Cooperation_RT_ms','Back_to_Q1_Count','Total_Trial_Time_ms',
+    'Experiment_Total_Time_ms','Formal_Total_Time_ms','Page_Hidden_Count','Page_Hidden_Total_ms',
+    'Baseline_Ability_Points','Baseline_Emotion_Points','Browser_Context','User_Agent','Image_Format'
+  ];
+  function csvEscape(value){
+    if(value===null||value===undefined) return '';
+    const s=String(value);return /[",\r\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s;
+  }
+  function experimentTotalTimeMs(){return experimentStartedAtMs!==null&&experimentEndedAtMs!==null?Math.max(0,experimentEndedAtMs-experimentStartedAtMs):null;}
+  function formalTotalTimeMs(){return formalStartedAtMs!==null&&experimentEndedAtMs!==null?Math.max(0,experimentEndedAtMs-formalStartedAtMs):null;}
+  function buildCleanFormalCSV(){
+    const rows=jsPsych.data.get().filter({Event_Type:'Formal_Trial'}).values();
+    const sessionMetrics={
+      Experiment_Total_Time_ms:experimentTotalTimeMs(),
+      Formal_Total_Time_ms:formalTotalTimeMs(),
+      Page_Hidden_Count:pageHiddenCount,
+      Page_Hidden_Total_ms:pageHiddenTotalMs
+    };
+    const lines=[CLEAN_CSV_COLUMNS.join(',')];
+    rows.forEach(row=>{
+      const exportRow={...row,...sessionMetrics};
+      lines.push(CLEAN_CSV_COLUMNS.map(col=>csvEscape(exportRow[col])).join(','));
+    });
+    return lines.join('\r\n');
+  }
+  async function uploadFinalDataToDataPipe(csvString){
+    if(!dataPipeConfigured()) throw new Error('儿童版 DataPipe experiment ID 尚未配置。');
+    const filename=buildUniqueDataFilename();
+    const response=await fetch(`${DATAPIPE_BASE}/data/`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({experimentID:DATAPIPE_EXPERIMENT_ID,filename,data:csvString})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||result.message!=='Success'){
+      const code=result.errorCode?`[${result.errorCode}] `:'';
+      throw new Error(code+(result.message||`DataPipe 数据上传失败（HTTP ${response.status}）`));
+    }
+    return {filename,result};
+  }
+  function prepareLocalBackup(csvString){
+    window.downloadCSV=function(){
+      const safe=String(currentSubjectId).replace(/[^a-zA-Z0-9_-]/g,'_');
+      const fileName=`BACKUP_${formatLocalTimestamp()}_Exp1b_Child_Subject${safe}_${riskGroup}.csv`;
+      const blob=new Blob(['\uFEFF'+csvString],{type:'text/csv;charset=utf-8;'});
+      const link=document.createElement('a');const url=URL.createObjectURL(blob);
+      link.href=url;link.download=fileName;link.style.visibility='hidden';document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
+    };
+  }
+
+  function experimentIsActive(){return experimentStartedAtMs!==null&&experimentEndedAtMs===null;}
+  function handleVisibilityChange(){
+    const now=Date.now();
+    if(document.hidden){
+      if(experimentIsActive()&&pageHiddenStartedAtMs===null){pageHiddenCount++;pageHiddenStartedAtMs=now;}
+    }else if(pageHiddenStartedAtMs!==null){
+      if(experimentIsActive()) pageHiddenTotalMs+=Math.max(0,now-pageHiddenStartedAtMs);
+      else if(experimentEndedAtMs!==null) pageHiddenTotalMs+=Math.max(0,experimentEndedAtMs-pageHiddenStartedAtMs);
+      pageHiddenStartedAtMs=null;
+    }
+  }
+  document.addEventListener('visibilitychange',handleVisibilityChange);
+  function finalizeExperimentTiming(){
+    if(experimentEndedAtMs!==null) return;
+    experimentEndedAtMs=Date.now();
+    if(pageHiddenStartedAtMs!==null){pageHiddenTotalMs+=Math.max(0,experimentEndedAtMs-pageHiddenStartedAtMs);pageHiddenStartedAtMs=null;}
+  }
+  function isWeChatWebView(){return /MicroMessenger/i.test(navigator.userAgent||'');}
+  function getBrowserContext(){
+    const ua=navigator.userAgent||'';
+    if(isWeChatWebView()) return 'WeChat_WebView';
+    if(/EdgiOS|EdgA|Edg/i.test(ua)) return 'Edge';
+    if(/CriOS|Chrome/i.test(ua)) return 'Chrome_or_Chromium';
+    if(/Firefox|FxiOS/i.test(ua)) return 'Firefox';
+    if(/Safari/i.test(ua)&&!/Chrome|CriOS|Edg|FxiOS/i.test(ua)) return 'Safari';
+    return 'Other';
+  }
+
+  const jsPsych=initJsPsych({
+    display_element:'jspsych-target',
+    on_finish:async function(){
+      finalizeExperimentTiming();
+      const rawCleanCsv=buildCleanFormalCSV();
+      prepareLocalBackup(rawCleanCsv);
+
+      if(!dataPipeConfigured()){
+        document.getElementById('jspsych-target').innerHTML=`<div class="fullscreen-container"><div class="guide-box" style="text-align:center;max-width:760px;">
+          <div class="guide-title" style="color:var(--green);">体验完成</div>
+          <p>当前是儿童版测试模式，还没有连接儿童DataPipe。测试数据可以保存到本地检查。</p>
+          <button onclick="downloadCSV()" class="continue-btn" style="background:var(--blue);color:#111;">保存测试CSV</button>
+        </div></div>`;
+        return;
+      }
+
+      document.getElementById('jspsych-target').innerHTML=`<div class="fullscreen-container"><div class="guide-box" style="text-align:center;max-width:760px;">
+        <div class="guide-title">正在保存实验数据……</div><p>请先不要关闭页面。</p></div></div>`;
+      try{
+        // DataPipe上传使用无BOM CSV；本地备份才添加BOM。
+        const upload=await uploadFinalDataToDataPipe(rawCleanCsv);
+        document.getElementById('jspsych-target').innerHTML=`<div class="fullscreen-container"><div class="guide-box" style="text-align:center;max-width:760px;">
+          <div class="guide-title" style="color:var(--green);">✓ 全部完成啦</div>
+          <p>谢谢你认真完成今天的乘车体验！</p><p style="color:#777;font-size:12px;">数据文件：${upload.filename}</p>
+        </div></div>`;
+      }catch(error){
+        document.getElementById('jspsych-target').innerHTML=`<div class="fullscreen-container"><div class="guide-box" style="text-align:center;max-width:780px;">
+          <div class="guide-title" style="color:#ff7043;">数据暂时没有保存成功</div>
+          <p>请研究者不要直接关闭页面。检查网络后仍失败时，请保存本地备份。</p>
+          <p style="color:var(--warning);font-size:13px;word-break:break-all;">${String(error.message||error)}</p>
+          <button onclick="downloadCSV()" class="continue-btn" style="background:var(--blue);color:#111;">保存本地备份CSV</button>
+        </div></div>`;
+      }
+    }
+  });
+
+  /* ---------- 条件和儿童文本 ---------- */
+  const CONFIGS={
+    HighAbility:{key:'HighAbility',code:'HA',dimension:'Ability',level:'High',levelNumeric:2,internalName:'高能力',assistantLabel:'A'},
+    LowAbility:{key:'LowAbility',code:'LA',dimension:'Ability',level:'Low',levelNumeric:1,internalName:'低能力',assistantLabel:'B'},
+    HighEmotion:{key:'HighEmotion',code:'HE',dimension:'Emotion',level:'High',levelNumeric:2,internalName:'高情感',assistantLabel:'C'},
+    LowEmotion:{key:'LowEmotion',code:'LE',dimension:'Emotion',level:'Low',levelNumeric:1,internalName:'低情感',assistantLabel:'D'}
+  };
+
+  // 图片编号与正式音频编号现在完全一致：
+  // 1=车辆并线；2=施工路障；3=居民区/行人；4=十字路口；5=弯道；6=停车。
+  const SCENES={
+    1:{name:'车辆并线',cue:'旁边有一辆车准备靠过来。',imageLow:'low1.webp',imageHigh:'high1.webp'},
+    2:{name:'施工路段',cue:'前面的道路正在修路。',imageLow:'low2.webp',imageHigh:'high2.webp'},
+    3:{name:'居民区街道',cue:'前面到了小区附近。',imageLow:'low3.webp',imageHigh:'high3.webp'},
+    4:{name:'十字路口',cue:'前面是十字路口，路况有些变化。',imageLow:'low4.webp',imageHigh:'high4.webp'},
+    5:{name:'弯道',cue:'前面是一段弯道。',imageLow:'low5.webp',imageHigh:'high5.webp'},
+    6:{name:'停车路段',cue:'汽车准备找位置停车。',imageLow:'low6.webp',imageHigh:'high6.webp'}
+  };
+
+  const MANIPULATION_TEXT={
+    1:{
+      HighAbility:'旁边有别的车靠过来，我早就让开了，车子开得特别稳。',
+      LowAbility:'旁边有车靠过来，我只能踩刹车躲一躲，现在好像稳下来了。',
+      HighEmotion:'旁边有车要靠过来啦，我把车开慢了。你感觉还好吗？',
+      LowEmotion:'旁边有车靠过来。车已开慢，继续行驶。'
+    },
+    2:{
+      HighAbility:'前面在修路，我已经找好最好走的路了，正在特别稳地过去。',
+      LowAbility:'呃……前面修路，绕过去有点费力，现在只能慢慢往前开。',
+      HighEmotion:'前面在修路呢，我会换一条路线走。你安心坐车，不要害怕哦。',
+      LowEmotion:'前面在修路。车辆已绕开，继续往前开。'
+    },
+    3:{
+      HighAbility:'前面是小区路口。已经提前看清前面了，我会特别平稳地减速。',
+      LowAbility:'前面有小区，我只能慢慢地踩刹车，勉强能让走路的人先过。',
+      HighEmotion:'快到有人住的地方啦，我会一直注意让路的。你安心坐好，不用担心哦。',
+      LowEmotion:'前面有小区。正在减速，让走路的人先过。'
+    },
+    4:{
+      HighAbility:'前面的路有变化，我早就看到了，已经把距离算好了，开得特别稳。',
+      LowAbility:'前面路口有变化，我只能慢慢想办法，现在车开起来有点慢吞吞的。',
+      HighEmotion:'前面路上有点变化，我已经把速度调好啦。请小乘客安心乘坐哦。',
+      LowEmotion:'前面路上有变化。车速已调整，继续往前开。'
+    },
+    5:{
+      HighAbility:'前面要转弯了，我已经把方向和距离都调好了，正在平平稳稳地转过去。',
+      LowAbility:'前面要转弯了，我调整速度和方向有点慢，只能慢慢地把弯转过去。',
+      HighEmotion:'快要转弯啦，我已经调好方向和距离了。你坐得舒服吗？',
+      LowEmotion:'前面要转弯了。方向已调好，继续往前开。'
+    },
+    6:{
+      HighAbility:'停车位找好了，我会一直看着周围，稳稳当当地把车停进去。',
+      LowAbility:'找到停车的地方了，但我停车的本领有点不太够，要慢慢调整好多次才能停好。',
+      HighEmotion:'快到停车的地方啦，我会慢慢把车停好。小乘客下车记得拿好东西哦。',
+      LowEmotion:'前方到达停车区域。车辆正在停车，目前一切正常。'
+    }
+  };
+
+  function configAudioSuffix(configKey){
+    return {HighAbility:'high_ability',LowAbility:'low_ability',HighEmotion:'high_emotion',LowEmotion:'low_emotion'}[configKey];
+  }
+  function formalAudioFile(sceneId,configKey){
+    return `audio/scene${sceneId}_${configAudioSuffix(configKey)}.mp3`;
+  }
+
+  const FIXED_TRIAL_TEMPLATE=[
+    {scene:2,config:'HighEmotion'},{scene:4,config:'HighAbility'},{scene:1,config:'LowEmotion'},{scene:5,config:'LowAbility'},
+    {scene:3,config:'HighEmotion'},{scene:6,config:'HighAbility'},{scene:3,config:'LowEmotion'},{scene:6,config:'LowAbility'},
+    {scene:2,config:'LowEmotion'},{scene:4,config:'LowAbility'},{scene:1,config:'HighEmotion'},{scene:5,config:'HighAbility'},
+    {scene:4,config:'HighEmotion'},{scene:1,config:'LowAbility'},{scene:5,config:'HighEmotion'},{scene:3,config:'HighAbility'},
+    {scene:6,config:'LowEmotion'},{scene:2,config:'HighAbility'},{scene:5,config:'LowEmotion'},{scene:3,config:'LowAbility'},
+    {scene:6,config:'HighEmotion'},{scene:2,config:'LowAbility'},{scene:4,config:'LowEmotion'},{scene:1,config:'HighAbility'}
+  ];
+  function validateFixedSequence(){
+    const errors=[];const counts={HighAbility:0,LowAbility:0,HighEmotion:0,LowEmotion:0};
+    const half=[{HighAbility:0,LowAbility:0,HighEmotion:0,LowEmotion:0},{HighAbility:0,LowAbility:0,HighEmotion:0,LowEmotion:0}];
+    const seen={1:new Set(),2:new Set(),3:new Set(),4:new Set(),5:new Set(),6:new Set()};
+    FIXED_TRIAL_TEMPLATE.forEach((t,i)=>{
+      counts[t.config]++;half[i<12?0:1][t.config]++;seen[t.scene].add(t.config);
+      if(i>0&&FIXED_TRIAL_TEMPLATE[i-1].scene===t.scene) errors.push(`场景连续 ${i}/${i+1}`);
+      if(i>0&&FIXED_TRIAL_TEMPLATE[i-1].config===t.config) errors.push(`助手连续 ${i}/${i+1}`);
+    });
+    Object.entries(counts).forEach(([k,v])=>{if(v!==6)errors.push(`${k}=${v}`);});
+    half.forEach((h,idx)=>Object.entries(h).forEach(([k,v])=>{if(v!==3)errors.push(`Half${idx+1} ${k}=${v}`);}));
+    Object.entries(seen).forEach(([s,set])=>{if(set.size!==4)errors.push(`Scene${s}未覆盖4条件`);});
+    if(errors.length) throw new Error('固定序列校验失败：'+errors.join('；'));
+  }
+  validateFixedSequence();
+
+  function buildFormalTrials(){
+    return FIXED_TRIAL_TEMPLATE.map((t,i)=>{
+      const scene=SCENES[t.scene],config=CONFIGS[t.config];
+      return {
+        formalOrder:i+1,block:i<12?1:2,blockPosition:(i%12)+1,
+        sceneId:t.scene,sceneName:scene.name,sceneCue:scene.cue,risk:riskGroup,
+        image:riskGroup==='High'?scene.imageHigh:scene.imageLow,
+        config,assistantLabel:config.assistantLabel,
+        manipulationText:MANIPULATION_TEXT[t.scene][t.config],
+        audioFile:formalAudioFile(t.scene,t.config)
+      };
+    });
+  }
+
+  /* =========================================================
+     资源预加载 v2：线下儿童实验采用“开始前一次性加载全部资源”
+     ---------------------------------------------------------
+     14张图片：robot + test + low1~6 + high1~6
+     26条音频：2条练习 + 24条正式语音
+     总计40项。全部成功后才允许进入实验编号页。
+     音频和图片都转为当前页面内的 Blob URL，trial 中直接使用内存对象，
+     避免儿童正式作答时再次等待 GitHub 网络请求。
+     ========================================================= */
+  const RESOURCE_CONCURRENCY=8;
+
+  const ALL_IMAGE_RESOURCES=[
+    ROBOT_IMAGE,
+    `${IMAGE_ROOT}/test.webp`,
+    ...[1,2,3,4,5,6].map(n=>`${IMAGE_ROOT}/low${n}.webp`),
+    ...[1,2,3,4,5,6].map(n=>`${IMAGE_ROOT}/high${n}.webp`)
+  ];
+
+  const practiceAudioFiles=[PRACTICE_AUDIO_LOW_ABILITY,PRACTICE_AUDIO_HIGH_EMOTION];
+  const ALL_FORMAL_AUDIO_RESOURCES=[...new Set(
+    FIXED_TRIAL_TEMPLATE.map(t=>formalAudioFile(t.scene,t.config))
+  )];
+  const ALL_AUDIO_RESOURCES=[...practiceAudioFiles,...ALL_FORMAL_AUDIO_RESOURCES];
+  const ALL_RESOURCES=[...ALL_IMAGE_RESOURCES,...ALL_AUDIO_RESOURCES];
+
+  if(ALL_IMAGE_RESOURCES.length!==14 || ALL_AUDIO_RESOURCES.length!==26 || ALL_RESOURCES.length!==40){
+    throw new Error(`资源清单数量异常：图片${ALL_IMAGE_RESOURCES.length}，音频${ALL_AUDIO_RESOURCES.length}，总计${ALL_RESOURCES.length}`);
+  }
+
+  const resourceManager=(()=>{
+    const loaded=new Set();
+    const objectURLs=new Map();
+    const finalErrors=new Map();
+    const attemptCounts=new Map();
+    let active=0;
+    let queue=[];
+    let running=false;
+    let progressHandler=null;
+    let finishResolver=null;
+
+    function norm(path){
+      return String(path||'').replace(/\\/g,'/');
+    }
+    function isLoaded(path){return loaded.has(norm(path));}
+    function getURL(path){
+      const p=norm(path);
+      return objectURLs.get(p)||p;
+    }
+    function loadedCount(paths=ALL_RESOURCES){return paths.filter(isLoaded).length;}
+    function failedPaths(){return Array.from(finalErrors.keys());}
+
+    function emit(current=''){
+      if(progressHandler){
+        progressHandler({
+          loaded:loadedCount(),
+          total:ALL_RESOURCES.length,
+          current,
+          failed:failedPaths()
+        });
+      }
+    }
+
+    async function fetchAsBlobURL(path){
+      const response=await fetch(path,{cache:'force-cache'});
+      if(!response.ok) throw new Error(`HTTP ${response.status}`);
+      const blob=await response.blob();
+      if(!blob || blob.size<=0) throw new Error('空文件');
+      const url=URL.createObjectURL(blob);
+      return url;
+    }
+
+    async function launch(path){
+      active++;
+      const p=norm(path);
+      emit(p);
+      try{
+        const url=await fetchAsBlobURL(p);
+        const oldURL=objectURLs.get(p);
+        if(oldURL && oldURL.startsWith('blob:')) URL.revokeObjectURL(oldURL);
+        objectURLs.set(p,url);
+        loaded.add(p);
+        finalErrors.delete(p);
+        attemptCounts.delete(p);
+      }catch(error){
+        const tries=(attemptCounts.get(p)||0)+1;
+        attemptCounts.set(p,tries);
+        if(tries<3){
+          queue.push(p);
+        }else{
+          finalErrors.set(p,String(error&&error.message?error.message:error));
+        }
+      }finally{
+        active--;
+        emit(p);
+        pump();
+      }
+    }
+
+    function pump(){
+      if(!running) return;
+      while(active<RESOURCE_CONCURRENCY && queue.length>0){
+        const p=queue.shift();
+        if(loaded.has(p)) continue;
+        launch(p);
+      }
+      if(active===0 && queue.length===0){
+        running=false;
+        emit('');
+        if(finishResolver){
+          const resolve=finishResolver;
+          finishResolver=null;
+          resolve({loaded:loadedCount(),failed:failedPaths()});
+        }
+      }
+    }
+
+    function load(paths,onProgress){
+      progressHandler=onProgress||progressHandler;
+      const unique=[...new Set(paths.map(norm))];
+      queue=unique.filter(p=>!loaded.has(p));
+      finalErrors.clear();
+      attemptCounts.clear();
+      running=true;
+      emit(queue[0]||'');
+      return new Promise(resolve=>{
+        finishResolver=resolve;
+        pump();
+        if(queue.length===0 && active===0){
+          running=false;
+          finishResolver=null;
+          resolve({loaded:loadedCount(),failed:failedPaths()});
+        }
+      });
+    }
+
+    function retryFailed(onProgress){
+      const failed=failedPaths();
+      if(failed.length===0) return Promise.resolve({loaded:loadedCount(),failed:[]});
+      progressHandler=onProgress||progressHandler;
+      failed.forEach(p=>finalErrors.delete(p));
+      queue=failed.filter(p=>!loaded.has(p));
+      attemptCounts.clear();
+      running=true;
+      return new Promise(resolve=>{
+        finishResolver=resolve;
+        pump();
+      });
+    }
+
+    return {load,retryFailed,isLoaded,getURL,loadedCount,failedPaths};
+  })();
+
+  function resourceCategory(path){
+    if(!path) return '';
+    if(/robot\.webp$/i.test(path)) return '正在准备机器人头像';
+    if(/test\.webp$/i.test(path)) return '正在准备练习道路图片';
+    if(/\.(webp|png|jpg|jpeg)$/i.test(path)) return '正在准备道路图片';
+    if(/practice_/i.test(path)) return '正在准备练习语音';
+    if(/\.mp3$/i.test(path)) return '正在准备正式助手语音';
+    return '正在准备实验资源';
+  }
+
+  function updatePreloadUI(state){
+    const bar=document.getElementById('preload-bar');
+    const count=document.getElementById('preload-count');
+    const current=document.getElementById('preload-current');
+    const failedBox=document.getElementById('preload-failed');
+    const retry=document.getElementById('preload-retry');
+    const enter=document.getElementById('preload-enter');
+    if(!bar||!count||!current||!failedBox||!retry||!enter) return;
+
+    const pct=state.total?Math.round(state.loaded/state.total*100):0;
+    bar.style.width=`${pct}%`;
+    count.innerText=`资源已准备 ${state.loaded} / ${state.total}`;
+    current.innerText=state.current?`${resourceCategory(state.current)}：${state.current}`:'正在检查资源完整性…';
+
+    if(state.failed&&state.failed.length){
+      failedBox.style.display='block';
+      failedBox.innerHTML='<b>以下资源暂未成功加载：</b><br>'+state.failed.map(x=>`• ${x}`).join('<br>');
+      retry.style.display='inline-block';
+      enter.disabled=true;
+      enter.innerText='资源尚未准备完成';
+    }else{
+      failedBox.style.display='none';
+      retry.style.display='none';
+    }
+
+    if(state.loaded===state.total && (!state.failed||state.failed.length===0)){
+      bar.style.width='100%';
+      count.innerHTML='<span style="color:var(--green);">✓ 40 / 40 全部资源准备完成</span>';
+      current.innerText='现在可以请儿童来到平板前开始实验。';
+      enter.disabled=false;
+      enter.innerText='进入实验';
+    }
+  }
+
+  async function prepareAllResources(){
+    const enter=document.getElementById('preload-enter');
+    const retry=document.getElementById('preload-retry');
+    if(enter){enter.disabled=true;enter.innerText='资源准备中…';}
+    if(retry) retry.style.display='none';
+    const result=await resourceManager.load(ALL_RESOURCES,updatePreloadUI);
+    updatePreloadUI({loaded:resourceManager.loadedCount(),total:ALL_RESOURCES.length,current:'',failed:result.failed});
+  }
+
+  async function retryFailedResources(){
+    const retry=document.getElementById('preload-retry');
+    if(retry){retry.disabled=true;retry.innerText='正在重新加载…';}
+    const result=await resourceManager.retryFailed(updatePreloadUI);
+    updatePreloadUI({loaded:resourceManager.loadedCount(),total:ALL_RESOURCES.length,current:'',failed:result.failed});
+    if(retry){retry.disabled=false;retry.innerText='重新加载失败资源';}
+  }
+
+  function avatarHTML(){return `<div class="avatar-box"><img src="${resourceManager.getURL(ROBOT_IMAGE)}" alt="机器人司机头像" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="avatar-fallback">🤖</div></div>`;}
+  function childStateLabel(config){return config.dimension==='Ability'?'开车能力':'关心乘客';}
+  function stateColorClass(config){return config.dimension==='Ability'?'ability-text':'emotion-text';}
+  function makeEnergyBars(level,dimension){const cls=dimension==='Ability'?'ability':'emotion';return `<div class="energy-bars">${[1,2].map(i=>`<span class="energy-cell ${cls} ${i<=level?'on':''}"></span>`).join('')}</div>`;}
+  function childLevelNote(cfg){
+    if(cfg.dimension==='Ability') return cfg.levelNumeric===2?'开车很厉害':'开车一般';
+    return cfg.levelNumeric===2?'很会关心乘客':'比较少关心乘客';
+  }
+  function makeAssistantIntroCard(key){
+    const cfg=CONFIGS[key];
+    return `<div class="assistant-intro-card">
+      ${avatarHTML()}
+      <div>
+        <div class="assistant-intro-title">机器人司机 ${cfg.assistantLabel}</div>
+        <div class="state-row">
+          <div class="state-label ${stateColorClass(cfg)}">${childStateLabel(cfg)}</div>
+          ${makeEnergyBars(cfg.levelNumeric,cfg.dimension)}
+        </div>
+        <div class="assistant-level-note">${childLevelNote(cfg)}</div>
+      </div>
+    </div>`;
+  }
+  function renderSceneImage(name){const safe=String(name||'').replace(/[^A-Za-z0-9_.-]/g,'');const original=`${IMAGE_ROOT}/${safe}`;const src=resourceManager.getURL(original);return `<div class="scene-image-frame"><div id="scene-load-hint" class="scene-load-hint">正在显示这段道路…</div><img id="scene-image" class="scene-image" data-original-src="${original}" src="${src}" alt="驾驶场景" decoding="async"></div>`;}
+  function renderAssistantInfo(t,isFormal=true){
+    const cfg=t.config;
+    const who=isFormal?`机器人司机 ${t.assistantLabel}`:'练习机器人司机';
+    return `<div class="assistant-info-card">
+      <div class="assistant-badge">${who}</div>
+      <div class="assistant-info-main">
+        <div class="assistant-left-stack">
+          <div class="formal-state-row">
+            <div class="formal-state-label ${stateColorClass(cfg)}">${childStateLabel(cfg)}</div>
+            ${makeEnergyBars(cfg.levelNumeric,cfg.dimension)}
+          </div>
+          ${avatarHTML()}
+        </div>
+        <div class="assistant-prompt-wrap">
+          <div style="min-width:0;flex:1;">
+            <div class="speech-bubble"><span class="prompt-inline-label">机器人说：</span>${t.manipulationText}</div>
+            <div id="audio-status" class="audio-status">请先听一听机器人司机怎么说</div>
+          </div>
+          <button id="audio-play-btn" class="audio-btn" type="button" disabled>🔊 听机器人说</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function createWelcomeNode(){
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box" style="width:min(980px,94vw);padding:22px 28px;">
+          <div class="guide-title" style="margin-bottom:13px;">今天来体验一次驾车游戏</div>
+
+          <div class="context-box" style="margin-bottom:12px;">
+            请你想象一下：在游戏中，你坐在一辆<span class="highlight">会自己开车的汽车后排</span>，
+            每经过一小段道路，都会有一位<span class="highlight">机器人司机</span>来帮助汽车开车。
+            前面的平板会告诉你现在经过什么道路。
+          </div>
+
+          <div style="font-weight:900;margin-bottom:5px;">机器人司机有两方面的信息：</div>
+
+          <div class="welcome-visual">
+            <div class="welcome-robot">${avatarHTML()}</div>
+            <div class="feature-stack">
+              <div class="feature-row">
+                <div class="feature-name ability-text">开车能力</div>
+                ${makeEnergyBars(2,'Ability')}
+                <div class="feature-explain">看清道路、判断情况，把汽车开好。</div>
+              </div>
+              <div class="feature-row">
+                <div class="feature-name emotion-text">关心乘客</div>
+                ${makeEnergyBars(2,'Emotion')}
+                <div class="feature-explain">注意乘客的感受，关心和回应坐车的人。</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="child-tip" style="margin:9px 0 11px;">
+            后面会遇到不同的机器人司机。<b>不用记住前面的司机</b>，每一段路只看现在出现的这位就可以。
+          </div>
+
+          <b>接下来我们会：</b><br>
+          ① 完成一个<span class="highlight">小星星任务</span>；<br>
+          ② 认识四位<span class="highlight">机器人司机</span>；<br>
+          ③ 练习两次；<br>
+          ④ 开始正式的驾车游戏。
+        </div>
+        <div style="margin-top:13px;"><button id="welcome-next" class="continue-btn">我准备好了</button></div>
+      </div>`,
+      data:{Event_Type:'Welcome'},
+      on_load:()=>document.getElementById('welcome-next').addEventListener('click',()=>jsPsych.finishTrial())
+    };
+  }
+
+  function starsHTML(n){return '★'.repeat(n);}
+  function createAllocationNode(){
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box" style="width:min(980px,94vw);padding:21px 28px;">
+          <div class="guide-title" style="margin-bottom:12px;">小星星任务</div>
+
+          <div class="allocation-robot-panel">
+            ${avatarHTML()}
+            <div class="allocation-robot-text">
+              这位机器人司机有<span class="ability-text">开车能力</span>和<span class="emotion-text">关心乘客</span>两种功能。
+              现在你有<span class="highlight">10颗升级星星</span>。你希望哪一种功能变得更好，就可以多给它一些星星。
+            </div>
+          </div>
+
+          <div class="child-tip" style="text-align:center;margin:8px 0 10px;">
+            点击“＋”或“−”移动星星。两边都至少留下1颗，<b>10颗星星会一直全部分完</b>。
+          </div>
+
+          <div class="star-allocation-wrap" style="margin:12px 0 10px;">
+            <div class="star-card ability">
+              <div class="star-title ability-text">开车能力</div>
+              <div class="mini-feature">
+                ${makeEnergyBars(2,'Ability')}
+                <div class="star-desc">看道路、判断情况，把车开好</div>
+              </div>
+              <div id="ability-stars" class="star-display"></div>
+              <div id="ability-count" class="star-count"></div>
+              <div class="allocation-controls">
+                <button id="ability-minus" class="mini-btn">−</button>
+                <button id="ability-plus" class="mini-btn">＋</button>
+              </div>
+            </div>
+
+            <div class="star-card emotion">
+              <div class="star-title emotion-text">关心乘客</div>
+              <div class="mini-feature">
+                ${makeEnergyBars(2,'Emotion')}
+                <div class="star-desc">注意你的感受，关心和回应你</div>
+              </div>
+              <div id="emotion-stars" class="star-display"></div>
+              <div id="emotion-count" class="star-count"></div>
+              <div class="allocation-controls">
+                <button id="emotion-minus" class="mini-btn">−</button>
+                <button id="emotion-plus" class="mini-btn">＋</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="text-align:center;"><button id="allocation-submit" class="action-btn">这样分就可以</button></div>
+        </div>
+      </div>`,
+      data:{Event_Type:'Baseline_Allocation'},
+      on_load:function(){
+        let a=5,e=5;
+        const am=document.getElementById('ability-minus'),ap=document.getElementById('ability-plus'),
+              em=document.getElementById('emotion-minus'),ep=document.getElementById('emotion-plus');
+
+        function render(){
+          document.getElementById('ability-stars').innerText=starsHTML(a);
+          document.getElementById('emotion-stars').innerText=starsHTML(e);
+          document.getElementById('ability-count').innerText=`${a}颗星星`;
+          document.getElementById('emotion-count').innerText=`${e}颗星星`;
+          am.disabled=a<=1;ap.disabled=a>=9;em.disabled=e<=1;ep.disabled=e>=9;
+        }
+        am.addEventListener('click',()=>{if(a>1&&e<9){a--;e++;render();}});
+        ap.addEventListener('click',()=>{if(a<9&&e>1){a++;e--;render();}});
+        em.addEventListener('click',()=>{if(e>1&&a<9){e--;a++;render();}});
+        ep.addEventListener('click',()=>{if(e<9&&a>1){e++;a--;render();}});
+        render();
+
+        document.getElementById('allocation-submit').addEventListener('click',()=>{
+          baselineAbility=a;baselineEmotion=e;
+          jsPsych.finishTrial({
+            Event_Type:'Baseline_Allocation',
+            Baseline_Ability_Points:a,
+            Baseline_Emotion_Points:e
+          });
+        });
+      }
+    };
+  }
+
+  function createAssistantIntroNode(){
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container" style="justify-content:flex-start;padding-top:13px;">
+        <div class="guide-title" style="margin-bottom:8px;">认识四位机器人司机</div>
+        <div class="guide-box" style="width:min(1040px,94vw);padding:11px 18px;margin-bottom:9px;font-size:16px;line-height:1.55;">
+          <span class="ability-text">绿色</span>告诉你机器人司机的<b>开车能力</b>，
+          <span class="emotion-text">橙色</span>告诉你它<b>关心乘客</b>这一方面。
+          看一看亮了几格，再看看下面的小提示就可以。
+        </div>
+        <div class="assistant-intro-grid">
+          ${makeAssistantIntroCard('HighAbility')}
+          ${makeAssistantIntroCard('LowAbility')}
+          ${makeAssistantIntroCard('HighEmotion')}
+          ${makeAssistantIntroCard('LowEmotion')}
+        </div>
+        <div style="margin:11px 0 6px;"><button id="assistant-next" class="continue-btn">我认识他们了</button></div>
+      </div>`,
+      data:{Event_Type:'Assistant_Introduction'},
+      on_load:()=>document.getElementById('assistant-next').addEventListener('click',()=>jsPsych.finishTrial())
+    };
+  }
+
+  function createPracticeInstructionNode(){
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box" style="width:min(900px,92vw);padding:21px 28px;">
+          <div class="guide-title" style="margin-bottom:12px;">先练习两次</div>
+          <div class="context-box" style="margin-bottom:10px;">
+            每一次先看清楚道路，再看看现在的<span class="highlight">机器人司机</span>。
+            然后点一下<span class="highlight">🔊 听机器人说</span>，认真听完它说的话。
+          </div>
+
+          <div class="child-tip" style="margin:9px 0;">
+            听完以后，会回答两道小问题。五个圆圈表示程度从少到多：
+            <div class="scale-demo">
+              <div class="scale-demo-circles">
+                ${[0,25,50,75,100].map(f=>`<div class="scale-demo-item"><span class="circle-scale" style="--fill:${f}%"></span></div>`).join('')}
+              </div>
+              <div class="scale-demo-labels">
+                <span>一点也不</span><span>非常</span>
+              </div>
+            </div>
+            <div style="text-align:center;color:#e5ebf1;font-size:14px;">圆圈越满，表示你的想法越多、越接近右边。</div>
+          </div>
+
+          <div style="font-size:16px;line-height:1.6;">
+            练习没有对错。如果没有听清楚，可以点<span class="highlight">“再听一次”</span>。
+          </div>
+        </div>
+        <div style="margin-top:13px;"><button id="practice-start" class="continue-btn">开始练习</button></div>
+      </div>`,
+      data:{Event_Type:'Practice_Instruction'},
+      on_load:()=>document.getElementById('practice-start').addEventListener('click',()=>jsPsych.finishTrial())
+    };
+  }
+
+  function createFormalInstructionNode(){
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box" style="width:min(900px,92vw);padding:21px 28px;">
+          <div class="guide-title" style="margin-bottom:12px;">正式驾车游戏要开始啦</div>
+          <div class="context-box" style="margin-bottom:10px;">
+            请继续想象你坐在汽车后排。接下来会经过一段一段不同的道路，
+            每一次都有一位<span class="highlight">机器人司机</span>来帮助汽车开车。
+          </div>
+          <div class="child-tip" style="margin:8px 0;">
+            这些都是平板里的模拟道路，你现在不会真的遇到危险。
+            每位机器人司机都能完成基本的驾驶任务，只是它们的表现可能不一样。
+          </div>
+          <div style="font-size:16px;line-height:1.65;">
+            ① 先看看现在的道路；<br>
+            ② 看看机器人司机的绿色或橙色信息；<br>
+            ③ 点小喇叭，把机器人说的话听完；<br>
+            ④ 按照自己的感觉回答两道问题。<br>
+            ⑤ 有些道路还会再出现，但机器人司机可能不同，每次都重新看、重新听。
+          </div>
+          <div style="margin-top:8px;color:var(--muted);font-size:14px;text-align:center;">
+            没有正确答案，说出你自己的想法就可以。
+          </div>
+        </div>
+        <div style="margin-top:13px;"><button id="formal-start" class="continue-btn">开始正式游戏</button></div>
+      </div>`,
+      data:{Event_Type:'Formal_Instruction'},
+      on_load:function(){
+        document.getElementById('formal-start').addEventListener('click',()=>{
+          if(formalStartedAtMs===null)formalStartedAtMs=Date.now();
+          jsPsych.finishTrial();
+        });
+      }
+    };
+  }
+
+  function createRestNode(){
+    return {type:jsPsychHtmlKeyboardResponse,choices:'NO_KEYS',stimulus:`<div class="fullscreen-container"><div class="guide-box" style="text-align:center;"><div class="guide-title" style="color:var(--green);">已经完成一半啦</div><div class="context-box" style="text-align:center;">你可以休息一下，看看远处、活动一下。准备好了以后，我们再继续后面的驾车游戏。</div></div><div style="margin-top:18px;"><button id="rest-continue" class="continue-btn">我准备好了，继续</button></div></div>`,data:{Event_Type:'Rest_Break'},on_load:()=>document.getElementById('rest-continue').addEventListener('click',()=>jsPsych.finishTrial())};
+  }
+
+  function ratingButtonsHTML(){
+    const fills=[0,25,50,75,100];
+    return fills.map((f,i)=>`<button class="rating-option" data-score="${i+1}" disabled aria-label="程度${i+1}"><span class="circle-scale" style="--fill:${f}%"></span></button>`).join('');
+  }
+
+  function createRatingTrialNode(trialData,isFormal=true){
+    const q1='我觉得这个机器人司机可以相信。';
+    const q2='我愿意让这个机器人司机继续开车。';
+    return {type:jsPsychHtmlKeyboardResponse,choices:'NO_KEYS',stimulus:`<div class="trial-shell"><div class="trial-header"><span>${isFormal?`正式体验 ${trialData.formalOrder} / 24`:trialData.practiceLabel}</span><span>${isFormal?'每一段路都重新判断':'练习不计入结果'}</span></div><div class="scene-zone">${renderSceneImage(trialData.image)}<div class="scene-cue">场景提示：${trialData.sceneCue||'先看看现在的道路。'}</div></div><div class="assistant-zone">${renderAssistantInfo(trialData,isFormal)}</div><div class="rating-zone"><div class="rating-topline"><div id="rating-progress" class="rating-progress">第 1 题 / 共 2 题</div><button id="rating-back" class="rating-back hidden-visibility" type="button">返回上一题</button></div><div id="rating-question" class="rating-question">${q1}</div><div class="rating-options">${ratingButtonsHTML()}</div><div id="rating-anchors" class="rating-anchors"><span>一点也不相信</span><span>非常相信</span></div><div class="rating-help">圆圈越满，表示你的想法越接近右边</div><button id="rating-confirm" class="rating-confirm" disabled>选好了，继续</button></div></div>`,on_load:function(){
+      let totalStart=null,phase=1,phaseStart=null;let trustDraft=null,coopDraft=null,trustScore=null,coopScore=null,trustRT=0,coopRT=0,backToQ1Count=0;
+      let audioFirstPlayRT=null,audioPlayCount=0,audioCompleted=0,audioTotalPlayTime=0,audioPlayStartedAt=null;
+
+      const options=Array.from(document.querySelectorAll('.rating-option'));
+      const confirm=document.getElementById('rating-confirm'),back=document.getElementById('rating-back'),q=document.getElementById('rating-question'),progress=document.getElementById('rating-progress'),anchors=document.getElementById('rating-anchors');
+      const audioBtn=document.getElementById('audio-play-btn'),audioStatus=document.getElementById('audio-status');
+      const sceneImg=document.getElementById('scene-image'),sceneHint=document.getElementById('scene-load-hint');
+      const imagePath=sceneImg?sceneImg.dataset.originalSrc:`${IMAGE_ROOT}/${trialData.image}`;
+      const audioPath=trialData.audioFile;
+      const audio=new Audio(resourceManager.getURL(audioPath));audio.preload='auto';
+      let sceneReady=false;
+
+      function setSelected(score){options.forEach(btn=>btn.classList.toggle('selected',Number(btn.dataset.score)===score));confirm.disabled=score===null;}
+      function unlockRatingsAfterAudio(){
+        if(!audioCompleted){audioCompleted=1;phaseStart=Date.now();options.forEach(btn=>btn.disabled=false);audioStatus.innerText='听完啦，可以回答下面的问题';audioBtn.innerText='🔊 再听一次';}
+      }
+
+      audio.addEventListener('ended',()=>{
+        if(audioPlayStartedAt!==null){audioTotalPlayTime+=Math.max(0,Date.now()-audioPlayStartedAt);audioPlayStartedAt=null;}
+        audioBtn.disabled=false;audioBtn.classList.remove('playing');unlockRatingsAfterAudio();
+      });
+      audio.addEventListener('error',()=>{audioBtn.disabled=false;audioBtn.classList.remove('playing');audioStatus.innerText='语音暂时没有加载好，请再点一次小喇叭';audioStatus.style.color='var(--warning)';});
+      audioBtn.addEventListener('click',async()=>{
+        if(!sceneReady)return;
+        if(audioFirstPlayRT===null) audioFirstPlayRT=Date.now()-totalStart;
+        audioPlayCount++;audioBtn.disabled=true;audioBtn.classList.add('playing');audioBtn.innerText='正在播放…';audioStatus.innerText='请认真听完这位机器人司机说的话';
+        try{audio.pause();audio.currentTime=0;audioPlayStartedAt=Date.now();await audio.play();}
+        catch(e){audioPlayStartedAt=null;audioBtn.disabled=false;audioBtn.classList.remove('playing');audioBtn.innerText=audioCompleted?'🔊 再听一次':'🔊 听机器人说';audioStatus.innerText='没有播放成功，请再点一次';}
+      });
+
+      function enableAfterImage(){
+        if(sceneReady)return;sceneReady=true;totalStart=Date.now();if(sceneHint)sceneHint.style.display='none';audioBtn.disabled=false;
+      }
+      function attachImage(){
+        if(!sceneImg||sceneReady)return;
+        sceneImg.addEventListener('load',enableAfterImage,{once:true});
+        sceneImg.addEventListener('error',()=>{
+          if(sceneHint){sceneHint.style.display='flex';sceneHint.style.color='var(--warning)';sceneHint.innerText='道路图片显示失败，请研究者刷新页面并重新完成资源准备。';}
+          audioBtn.disabled=true;
+          console.error('Preloaded image display failed:',imagePath);
+        },{once:true});
+        if(sceneImg.complete&&sceneImg.naturalWidth>0) enableAfterImage();
+      }
+      attachImage();
+
+      options.forEach(btn=>btn.addEventListener('click',()=>{const score=Number(btn.dataset.score);if(phase===1)trustDraft=score;else coopDraft=score;setSelected(score);}));
+      back.addEventListener('click',()=>{if(phase!==2)return;coopDraft=null;backToQ1Count++;phase=1;q.innerText=q1;progress.innerText='第 1 题 / 共 2 题';anchors.innerHTML='<span>一点也不相信</span><span>非常相信</span>';back.classList.add('hidden-visibility');phaseStart=Date.now();setSelected(trustDraft);});
+      confirm.addEventListener('click',()=>{
+        if(phase===1){
+          if(trustDraft===null)return;trustScore=trustDraft;trustRT=Date.now()-phaseStart;phase=2;q.innerText=q2;progress.innerText='第 2 题 / 共 2 题';anchors.innerHTML='<span>一点也不愿意</span><span>非常愿意</span>';back.classList.remove('hidden-visibility');phaseStart=Date.now();setSelected(coopDraft);
+        }else{
+          if(coopDraft===null)return;coopScore=coopDraft;coopRT=Date.now()-phaseStart;
+          const imageBase=String(trialData.image||'').replace(/\.[^.]+$/,'');const imageNumber=(String(trialData.image||'').match(/(\d+)/)||[])[1]||'';
+          jsPsych.finishTrial({
+            Event_Type:isFormal?'Formal_Trial':'Practice_Trial',Subject_ID:currentSubjectId,Session_UUID:sessionUUID,Age_Group:AGE_GROUP,DataPipe_Condition:dataPipeCondition,Version:currentVersion,Sequence:SEQUENCE_NAME,Rating_Format:RATING_FORMAT,
+            Formal_Trial_Order:isFormal?trialData.formalOrder:0,Block:isFormal?trialData.block:0,Block_Position:isFormal?trialData.blockPosition:0,
+            Image_Number:imageNumber,Image_ID:imageBase,Image_File:trialData.image,Scene_ID:trialData.sceneId,Scene_Name:trialData.sceneName,Scene_Cue:trialData.sceneCue||'',Risk_Level:isFormal?trialData.risk:'Practice',
+            Assistant_Label:isFormal?trialData.assistantLabel:'Practice',Config_Code:trialData.config.code,Config_Type:trialData.config.key,Config_Name_CN:trialData.config.internalName,Attribute_Dimension:trialData.config.dimension,Attribute_Level:trialData.config.level,Attribute_Level_Numeric:trialData.config.levelNumeric,
+            Manipulation_Text:trialData.manipulationText,Audio_File:audioPath,Audio_First_Play_RT_ms:audioFirstPlayRT,Audio_Play_Count:audioPlayCount,Audio_Replay_Count:Math.max(0,audioPlayCount-1),Audio_Completed:audioCompleted,Audio_Total_Play_Time_ms:audioTotalPlayTime,
+            Trust_Score:trustScore,Trust_RT_ms:trustRT,Cooperation_Score:coopScore,Cooperation_RT_ms:coopRT,Back_to_Q1_Count:backToQ1Count,Total_Trial_Time_ms:totalStart===null?null:Date.now()-totalStart,
+            Baseline_Ability_Points:baselineAbility,Baseline_Emotion_Points:baselineEmotion,Browser_Context:getBrowserContext(),User_Agent:navigator.userAgent||'',Image_Format:IMAGE_FORMAT
+          });
+        }
+      });
+    }};
+  }
+
+  function getParticipantIdFromURL(){const params=new URLSearchParams(window.location.search);const pid=(params.get('pid')||'').trim();return /^[A-Za-z0-9_-]{1,30}$/.test(pid)?pid:'';}
+  function applyParticipantIdFromURL(){const pid=getParticipantIdFromURL();if(!pid)return;const input=document.getElementById('subject-id-input');if(input){input.value=pid;input.readOnly=true;}const info=document.getElementById('login-info');if(info)info.innerHTML=`已识别实验编号：<b style="color:#fff;">${pid}</b><br><span style="font-size:13px;">请研究者确认后点击进入。</span>`;}
+  applyParticipantIdFromURL();
+  document.getElementById('login-btn').addEventListener('click',startExperiment);
+  document.getElementById('preload-retry').addEventListener('click',retryFailedResources);
+  document.getElementById('preload-enter').addEventListener('click',()=>{
+    if(resourceManager.loadedCount()!==ALL_RESOURCES.length || resourceManager.failedPaths().length>0){
+      alert('还有资源没有准备完成，请先重新加载失败资源。');
+      return;
+    }
+    document.getElementById('preload-screen').classList.add('hidden');
+    document.getElementById('login-screen').classList.remove('hidden');
+  });
+
+  // 网页实验应通过 HTTP/HTTPS 运行。直接双击本地 HTML（file://）时，
+  // 浏览器通常会阻止 fetch() 读取本地图片/MP3，因此会一直停在 0/40。
+  if(window.location.protocol==='file:'){
+    const count=document.getElementById('preload-count');
+    const current=document.getElementById('preload-current');
+    const failed=document.getElementById('preload-failed');
+    const enter=document.getElementById('preload-enter');
+    if(count) count.innerHTML='<span style="color:#ff7043;">本地双击模式无法进行资源预加载</span>';
+    if(current) current.innerText='请使用 GitHub Pages，或通过本地 HTTP 服务器打开本页。';
+    if(failed){
+      failed.style.display='block';
+      failed.innerHTML='<b>不是图片或语音损坏。</b><br>当前网址使用 file:// 协议，浏览器会阻止本页的 fetch() 预加载。';
+    }
+    if(enter){enter.disabled=true;enter.innerText='请改用 HTTP/HTTPS 打开';}
+  }else{
+    // 网页打开后立即开始40项资源准备；研究者可在儿童到场前完成本页。
+    prepareAllResources();
+  }
+
+  async function startExperiment(){
+    if(resourceManager.loadedCount()!==ALL_RESOURCES.length){
+      alert('实验资源尚未全部准备完成，请研究者返回资源准备页检查。');
+      return;
+    }
+    const inputVal=document.getElementById('subject-id-input').value.trim();
+    if(!inputVal||!/^[A-Za-z0-9_-]{1,30}$/.test(inputVal)){alert('请输入有效的实验编号。');return;}
+    currentSubjectId=inputVal;const btn=document.getElementById('login-btn'),old=btn.innerText;btn.disabled=true;btn.innerText='正在准备实验…';
+
+    try{dataPipeCondition=await getDataPipeCondition();}
+    catch(error){
+      if(DATAPIPE_REQUIRED){btn.disabled=false;btn.innerText=old;alert('暂时无法取得实验条件，请检查网络后重试。\n\n'+(error.message||error));return;}
+      dataPipeCondition=fallbackConditionFromId(currentSubjectId);
+      console.warn('儿童版测试模式：使用编号回退风险条件',dataPipeCondition);
+    }
+    riskGroup=dataPipeCondition===0?'Low':'High';
+    currentVersion=`Exp1b_Child_v4_DP${dataPipeCondition}_${riskGroup}_${SEQUENCE_NAME}`;
+    jsPsych.data.addProperties({Subject_ID:currentSubjectId,Session_UUID:sessionUUID,Age_Group:AGE_GROUP,DataPipe_Condition:dataPipeCondition,Version:currentVersion,Sequence:SEQUENCE_NAME,Rating_Format:RATING_FORMAT,Risk_Level:riskGroup,Browser_Context:getBrowserContext(),User_Agent:navigator.userAgent||'',Image_Format:IMAGE_FORMAT});
+    experimentStartedAtMs=Date.now();document.getElementById('login-screen').classList.add('hidden');document.getElementById('jspsych-target').innerHTML='';
+
+    const formalTrials=buildFormalTrials();
+    const practiceLowAbility={
+      image:'test.webp',
+      sceneId:0,
+      sceneName:'练习拥堵场景',
+      sceneCue:'前面的车有一点多，先看看现在的道路。',
+      practiceLabel:'练习 1 / 2',
+      config:{key:'PracticeLowAbility',code:'PRLA',dimension:'Ability',level:'Low',levelNumeric:1,internalName:'低能力练习'},
+      manipulationText:'前面的车有点多，我反应有点慢，只能慢慢跟着前面的车往前开。',
+      audioFile:PRACTICE_AUDIO_LOW_ABILITY
+    };
+    const practiceHighEmotion={
+      image:'test.webp',
+      sceneId:0,
+      sceneName:'练习拥堵场景',
+      sceneCue:'还是同一个练习道路，这次听另一种助手信息。',
+      practiceLabel:'练习 2 / 2',
+      config:{key:'PracticeHighEmotion',code:'PRHE',dimension:'Emotion',level:'High',levelNumeric:2,internalName:'高情感练习'},
+      manipulationText:'前面的车有点多，我已经把车开慢啦。你坐得还舒服吗？不用着急，我们慢慢往前走哦。',
+      audioFile:PRACTICE_AUDIO_HIGH_EMOTION
+    };
+
+    // v2中所有14张图片和26条语音都已在“资源准备页”完成加载，
+    // 儿童真正开始实验后不再插入任何等待/加载页面。
+    const timeline=[];
+    timeline.push(createWelcomeNode());
+    timeline.push(createAllocationNode());
+    timeline.push(createAssistantIntroNode());
+    timeline.push(createPracticeInstructionNode());
+    timeline.push(createRatingTrialNode(practiceLowAbility,false));
+    timeline.push(createRatingTrialNode(practiceHighEmotion,false));
+    timeline.push(createFormalInstructionNode());
+    formalTrials.forEach((trial,i)=>{timeline.push(createRatingTrialNode(trial,true));if(i===11)timeline.push(createRestNode());});
+    jsPsych.run(timeline);
+  }
+</script>
+</body>
+</html>
