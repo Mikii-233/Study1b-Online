@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-  <title>实验1b｜机器人驾车游戏（儿童版）</title>
+  <title>实验1b｜机器人驾车游戏（儿童版 v6）</title>
 
   <!-- 与成人1b / 实验3a保持相同的本地 jsPsych 目录结构 -->
   <script src="../jspsych/jspsych.js"></script>
@@ -785,6 +785,151 @@
     }
 
 
+
+    /* =========================================================
+       v6 FINAL LAYOUT LAYER — iPad Air 4 landscape
+       Key change: instruction pages NO LONGER reuse .fullscreen-container.
+       Physical 2360×1640 px ≈ CSS 1180×820 px at DPR=2.
+       ========================================================= */
+
+    /* Instruction / tutorial pages: near-full-screen card, natural scroll. */
+    .instruction-page{
+      width:100%;
+      min-height:100dvh;
+      height:auto;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
+      gap:12px;
+      padding:18px 22px calc(22px + env(safe-area-inset-bottom));
+      margin:0;
+      overflow:visible;
+      background:var(--bg);
+    }
+    .instruction-page > .instruction-card{
+      width:100%!important;
+      max-width:none!important;
+      margin:0!important;
+      padding:26px 34px!important;
+      font-size:19px!important;
+      line-height:1.62!important;
+    }
+    .welcome-page > .instruction-card,
+    .allocation-page > .instruction-card,
+    .practice-instruction-page > .instruction-card,
+    .formal-instruction-page > .instruction-card,
+    .rest-page > .instruction-card{
+      /* Fill the available screen instead of becoming a small centered island.
+         This is a MIN-height only: longer content simply makes the page scroll. */
+      min-height:calc(100dvh - 104px);
+      flex:1 0 auto;
+    }
+    .instruction-page > div:not(.instruction-card):last-child{
+      flex:0 0 auto;
+      margin-top:0!important;
+    }
+    .instruction-page .guide-title{
+      font-size:32px!important;
+      line-height:1.25!important;
+      margin-bottom:16px!important;
+    }
+    .instruction-page .context-box{
+      font-size:18px!important;
+      line-height:1.58!important;
+      padding:14px 17px!important;
+    }
+    .instruction-page .child-tip{
+      font-size:16.5px!important;
+      line-height:1.55!important;
+    }
+    .instruction-page .welcome-visual{
+      width:100%;
+      grid-template-columns:145px minmax(0,1fr)!important;
+      gap:20px!important;
+      padding:16px 18px!important;
+    }
+    .instruction-page .welcome-robot .avatar-box{width:112px!important;height:112px!important;}
+    .instruction-page .feature-row{
+      grid-template-columns:120px 124px minmax(0,1fr)!important;
+      padding:10px 13px!important;
+    }
+    .instruction-page .feature-name{font-size:19px!important;}
+    .instruction-page .feature-explain{font-size:16px!important;}
+
+    /* Assistant-introduction page is a different structure (title/grid/button),
+       but it also uses the whole viewport and can scroll when necessary. */
+    .assistant-intro-page{
+      padding-top:18px!important;
+    }
+    .assistant-intro-page > .guide-title{margin-bottom:2px!important;}
+    .assistant-intro-page > .guide-box{
+      width:100%!important;
+      max-width:none!important;
+      margin:0!important;
+    }
+    .assistant-intro-page .assistant-intro-grid{
+      width:100%!important;
+      max-width:none!important;
+    }
+
+    /* Trial pages: never scale the whole page to fit. Use natural document height;
+       if browser chrome leaves less vertical room, the page scrolls. */
+    .trial-shell{
+      width:100%!important;
+      min-height:100dvh!important;
+      height:auto!important;
+      display:flex!important;
+      flex-direction:column!important;
+      overflow-x:hidden!important;
+      overflow-y:visible!important;
+    }
+    .scene-zone,
+    .assistant-zone,
+    .rating-zone{
+      flex:0 0 auto!important;
+      height:auto!important;
+      min-height:0!important;
+    }
+    .scene-image-frame{
+      width:min(720px,68vw)!important;
+      height:auto!important;
+      max-height:none!important;
+      aspect-ratio:637/315!important;
+    }
+    .assistant-info-card{
+      width:calc(100vw - 34px)!important;
+      max-width:none!important;
+    }
+    .rating-zone{
+      padding:3px 10px calc(8px + env(safe-area-inset-bottom))!important;
+    }
+    .rating-topline{width:min(760px,78vw)!important;height:20px!important;min-height:20px!important;}
+    .rating-question{font-size:17px!important;margin:1px 0 4px!important;}
+    .rating-options{width:min(700px,72vw)!important;gap:8px!important;}
+    .rating-option{height:44px!important;min-height:44px!important;border-radius:8px!important;}
+    .circle-scale{width:32px!important;height:32px!important;border-width:2px!important;}
+    .rating-anchors{width:min(700px,72vw)!important;font-size:11px!important;}
+    .rating-help{font-size:10px!important;}
+    .rating-confirm{height:32px!important;min-height:32px!important;margin-top:3px!important;font-size:13.5px!important;}
+
+    /* iPad / tablet landscape. No min-width gate: prevents a browser-reported
+       viewport width quirk from skipping the tablet rules. */
+    @media (orientation:landscape){
+      html,body,#jspsych-target,.jspsych-display-element,.jspsych-content-wrapper,.jspsych-content{
+        width:100%!important;
+        min-height:100dvh!important;
+        height:auto!important;
+        max-width:none!important;
+        overflow-x:hidden!important;
+        overflow-y:auto!important;
+      }
+      .jspsych-content-wrapper{
+        display:block!important;
+        padding:0!important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -833,7 +978,7 @@
 
 <script>
   /* =========================================================
-     实验1b 儿童版候选版 v4｜平板横屏优化版
+     实验1b 儿童版候选版 v6｜iPad Air 4 横屏结构修正版
      ---------------------------------------------------------
      核心框架：jsPsych
      推荐设备：平板横屏浏览器
@@ -1396,8 +1541,8 @@
     return {
       type:jsPsychHtmlKeyboardResponse,
       choices:'NO_KEYS',
-      stimulus:`<div class="fullscreen-container">
-        <div class="guide-box" style="width:min(980px,94vw);padding:22px 28px;">
+      stimulus:`<div class="instruction-page welcome-page">
+        <div class="guide-box instruction-card" style="width:min(980px,94vw);padding:22px 28px;">
           <div class="guide-title" style="margin-bottom:13px;">今天来体验一次驾车游戏</div>
 
           <div class="context-box" style="margin-bottom:12px;">
@@ -1446,8 +1591,8 @@
     return {
       type:jsPsychHtmlKeyboardResponse,
       choices:'NO_KEYS',
-      stimulus:`<div class="fullscreen-container">
-        <div class="guide-box" style="width:min(980px,94vw);padding:21px 28px;">
+      stimulus:`<div class="instruction-page allocation-page">
+        <div class="guide-box instruction-card" style="width:min(980px,94vw);padding:21px 28px;">
           <div class="guide-title" style="margin-bottom:12px;">小星星任务</div>
 
           <div class="allocation-robot-panel">
@@ -1530,7 +1675,7 @@
     return {
       type:jsPsychHtmlKeyboardResponse,
       choices:'NO_KEYS',
-      stimulus:`<div class="fullscreen-container" style="justify-content:flex-start;padding-top:13px;">
+      stimulus:`<div class="instruction-page assistant-intro-page">
         <div class="guide-title" style="margin-bottom:8px;">认识四位机器人司机</div>
         <div class="guide-box" style="width:min(1040px,94vw);padding:11px 18px;margin-bottom:9px;font-size:16px;line-height:1.55;">
           <span class="ability-text">绿色</span>告诉你机器人司机的<b>开车能力</b>，
@@ -1554,8 +1699,8 @@
     return {
       type:jsPsychHtmlKeyboardResponse,
       choices:'NO_KEYS',
-      stimulus:`<div class="fullscreen-container">
-        <div class="guide-box" style="width:min(900px,92vw);padding:21px 28px;">
+      stimulus:`<div class="instruction-page practice-instruction-page">
+        <div class="guide-box instruction-card" style="width:min(900px,92vw);padding:21px 28px;">
           <div class="guide-title" style="margin-bottom:12px;">先练习两次</div>
           <div class="context-box" style="margin-bottom:10px;">
             每一次先看清楚道路，再看看现在的<span class="highlight">机器人司机</span>。
@@ -1590,8 +1735,8 @@
     return {
       type:jsPsychHtmlKeyboardResponse,
       choices:'NO_KEYS',
-      stimulus:`<div class="fullscreen-container">
-        <div class="guide-box" style="width:min(900px,92vw);padding:21px 28px;">
+      stimulus:`<div class="instruction-page formal-instruction-page">
+        <div class="guide-box instruction-card" style="width:min(900px,92vw);padding:21px 28px;">
           <div class="guide-title" style="margin-bottom:12px;">正式驾车游戏要开始啦</div>
           <div class="context-box" style="margin-bottom:10px;">
             请继续想象你坐在汽车后排。接下来会经过一段一段不同的道路，
@@ -1625,7 +1770,7 @@
   }
 
   function createRestNode(){
-    return {type:jsPsychHtmlKeyboardResponse,choices:'NO_KEYS',stimulus:`<div class="fullscreen-container"><div class="guide-box" style="text-align:center;"><div class="guide-title" style="color:var(--green);">已经完成一半啦</div><div class="context-box" style="text-align:center;">你可以休息一下，看看远处、活动一下。准备好了以后，我们再继续后面的驾车游戏。</div></div><div style="margin-top:18px;"><button id="rest-continue" class="continue-btn">我准备好了，继续</button></div></div>`,data:{Event_Type:'Rest_Break'},on_load:()=>document.getElementById('rest-continue').addEventListener('click',()=>jsPsych.finishTrial())};
+    return {type:jsPsychHtmlKeyboardResponse,choices:'NO_KEYS',stimulus:`<div class="instruction-page rest-page"><div class="guide-box instruction-card" style="text-align:center;"><div class="guide-title" style="color:var(--green);">已经完成一半啦</div><div class="context-box" style="text-align:center;">你可以休息一下，看看远处、活动一下。准备好了以后，我们再继续后面的驾车游戏。</div></div><div style="margin-top:18px;"><button id="rest-continue" class="continue-btn">我准备好了，继续</button></div></div>`,data:{Event_Type:'Rest_Break'},on_load:()=>document.getElementById('rest-continue').addEventListener('click',()=>jsPsych.finishTrial())};
   }
 
   function ratingButtonsHTML(){
@@ -1753,7 +1898,7 @@
       console.warn('儿童版测试模式：使用编号回退风险条件',dataPipeCondition);
     }
     riskGroup=dataPipeCondition===0?'Low':'High';
-    currentVersion=`Exp1b_Child_v4_DP${dataPipeCondition}_${riskGroup}_${SEQUENCE_NAME}`;
+    currentVersion=`Exp1b_Child_v6_DP${dataPipeCondition}_${riskGroup}_${SEQUENCE_NAME}`;
     jsPsych.data.addProperties({Subject_ID:currentSubjectId,Session_UUID:sessionUUID,Age_Group:AGE_GROUP,DataPipe_Condition:dataPipeCondition,Version:currentVersion,Sequence:SEQUENCE_NAME,Rating_Format:RATING_FORMAT,Risk_Level:riskGroup,Browser_Context:getBrowserContext(),User_Agent:navigator.userAgent||'',Image_Format:IMAGE_FORMAT});
     experimentStartedAtMs=Date.now();document.getElementById('login-screen').classList.add('hidden');document.getElementById('jspsych-target').innerHTML='';
 
