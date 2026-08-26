@@ -541,736 +541,401 @@
 
 
     /* =========================================================
-       v5：所有页面严格限制在平板横屏可视高度内
+       v7：平板横屏“自然滚动版”
        ---------------------------------------------------------
-       关键原则：
-       1) 使用 100svh，避开 Safari / 内置浏览器工具栏遮挡；
-       2) 指导页面 = 内容区 + 固定底部按钮区；
-       3) 即使系统字体/浏览器工具栏稍大，按钮也不会掉出屏幕；
-       4) 正常 iPad 横屏不需要滚动；极端情况下只允许内容卡内部滚动。
+       不再强行把所有内容压进一个固定高度。
+       页面允许自然纵向滚动，避免文字/按钮被压缩或裁切。
+       正式 trial 仍保持横屏分区，但三个区域按内容自然展开。
        ========================================================= */
 
-    .guide-screen{
-      width:100%;
-      height:100svh!important;
+    html, body{
+      height:auto!important;
+      min-height:100%!important;
+      overflow-x:hidden!important;
+      overflow-y:auto!important;
+      -webkit-overflow-scrolling:touch;
+    }
+
+    #preload-screen,
+    #login-screen,
+    #jspsych-target,
+    .jspsych-display-element,
+    .jspsych-content-wrapper,
+    .jspsych-content{
+      height:auto!important;
       min-height:100svh!important;
-      max-height:100svh!important;
-      overflow:hidden!important;
-      padding:8px 14px calc(8px + env(safe-area-inset-bottom))!important;
-      display:grid!important;
-      grid-template-rows:minmax(0,1fr) 52px;
-      gap:7px;
-      align-items:center;
-      justify-items:center;
-      justify-content:stretch!important;
+      max-height:none!important;
+      overflow:visible!important;
     }
 
-    .guide-fit-box{
-      width:min(980px,94vw)!important;
-      max-height:100%!important;
-      min-height:0!important;
-      overflow:auto!important;
-      overscroll-behavior:contain;
-      scrollbar-width:thin;
-      padding:15px 22px!important;
-      font-size:16px!important;
-      line-height:1.48!important;
-      margin:0!important;
+    /* ---------- 所有指导页：自然高度 + 可滚动 ---------- */
+    .fullscreen-container,
+    .guide-screen{
+      width:100%!important;
+      height:auto!important;
+      min-height:100svh!important;
+      max-height:none!important;
+      overflow:visible!important;
+      display:flex!important;
+      flex-direction:column!important;
+      align-items:center!important;
+      justify-content:flex-start!important;
+      padding:28px 18px 42px!important;
+      gap:16px!important;
     }
 
-    .guide-screen .guide-title{
-      font-size:25px!important;
+    .guide-box,
+    .guide-fit-box,
+    .welcome-guide,
+    .allocation-guide,
+    .practice-guide,
+    .formal-guide{
+      width:min(1080px,92vw)!important;
+      max-height:none!important;
+      overflow:visible!important;
+      padding:24px 30px!important;
+      margin:0 auto!important;
+      font-size:18px!important;
+      line-height:1.6!important;
+      border-radius:16px!important;
+    }
+
+    .guide-title{
+      font-size:31px!important;
       line-height:1.2!important;
-      margin:0 0 9px!important;
+      margin:0 0 16px!important;
     }
 
-    .guide-screen .context-box{
-      padding:10px 14px!important;
-      margin:0 0 9px!important;
+    .context-box{
+      padding:14px 18px!important;
+      margin:0 0 14px!important;
+      font-size:18px!important;
+      line-height:1.55!important;
+    }
+
+    .child-tip{
+      padding:11px 15px!important;
+      margin:12px 0!important;
       font-size:16px!important;
-      line-height:1.48!important;
-    }
-
-    .guide-screen .child-tip{
-      padding:8px 12px!important;
-      margin:7px 0!important;
-      font-size:14.5px!important;
-      line-height:1.45!important;
+      line-height:1.5!important;
     }
 
     .screen-action{
-      height:52px;
-      min-height:52px;
-      width:100%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      margin:0!important;
+      position:static!important;
+      width:100%!important;
+      height:auto!important;
+      min-height:0!important;
+      margin:2px 0 0!important;
       padding:0!important;
-      z-index:5;
+      display:flex!important;
+      justify-content:center!important;
+      align-items:center!important;
     }
 
     .screen-action .continue-btn,
-    .screen-action .action-btn{
-      min-width:180px!important;
-      min-height:44px!important;
-      height:44px!important;
-      padding:5px 22px!important;
-      font-size:16px!important;
-      line-height:1!important;
+    .screen-action .action-btn,
+    .continue-btn,
+    .action-btn{
+      min-width:220px!important;
+      min-height:50px!important;
+      height:auto!important;
+      padding:12px 28px!important;
+      font-size:18px!important;
       margin:0!important;
     }
 
-    /* 首页 */
-    .welcome-guide{width:min(1000px,94vw)!important;}
-    .welcome-guide .welcome-visual{
-      grid-template-columns:116px minmax(0,1fr)!important;
+    /* 首页视觉区域恢复正常比例 */
+    .welcome-visual{
+      grid-template-columns:145px minmax(0,1fr)!important;
+      gap:22px!important;
+      padding:16px 18px!important;
+      margin:14px 0!important;
+    }
+    .welcome-robot .avatar-box{width:112px!important;height:112px!important;}
+    .feature-stack{gap:12px!important;}
+    .feature-row{
+      grid-template-columns:125px 128px minmax(0,1fr)!important;
       gap:14px!important;
-      padding:10px 12px!important;
-      margin:8px 0!important;
+      padding:11px 13px!important;
     }
-    .welcome-guide .welcome-robot .avatar-box{
-      width:88px!important;height:88px!important;
-    }
-    .welcome-guide .feature-stack{gap:7px!important;}
-    .welcome-guide .feature-row{
-      grid-template-columns:105px 112px minmax(0,1fr)!important;
-      gap:9px!important;
-      padding:7px 10px!important;
-    }
-    .welcome-guide .feature-name{font-size:17px!important;}
-    .welcome-guide .feature-explain{font-size:13.5px!important;line-height:1.35!important;}
-    .welcome-guide .feature-row .energy-cell{width:44px!important;height:15px!important;}
+    .feature-name{font-size:20px!important;}
+    .feature-explain{font-size:16px!important;line-height:1.45!important;}
+    .feature-row .energy-cell{width:50px!important;height:18px!important;}
 
-    .task-strip-title{font-size:14px;font-weight:900;margin:6px 0 5px;}
     .task-strip{
-      display:grid;grid-template-columns:repeat(4,1fr);gap:7px;
-      font-size:13px;font-weight:800;
-    }
-    .task-strip>div{
-      text-align:center;background:#232630;border:1px solid #454c58;
-      border-radius:8px;padding:6px 5px;white-space:nowrap;
-    }
-
-    /* 小星星任务 */
-    .allocation-guide{width:min(980px,94vw)!important;}
-    .allocation-guide .allocation-robot-panel{
-      width:min(700px,94%)!important;
-      grid-template-columns:78px minmax(0,1fr)!important;
+      grid-template-columns:repeat(4,1fr)!important;
       gap:10px!important;
-      margin:5px auto 7px!important;
-      padding:7px 10px!important;
+      font-size:15px!important;
     }
-    .allocation-guide .allocation-robot-panel .avatar-box{
-      width:68px!important;height:68px!important;
-    }
-    .allocation-guide .allocation-robot-text{
-      font-size:14px!important;line-height:1.4!important;
-    }
-    .allocation-guide .star-allocation-wrap{
-      gap:12px!important;margin:7px 0 3px!important;
-    }
-    .allocation-guide .star-card{
-      padding:9px 10px!important;max-width:370px!important;
-    }
-    .allocation-guide .star-title{font-size:17px!important;margin-bottom:1px!important;}
-    .allocation-guide .star-desc{font-size:12px!important;min-height:0!important;line-height:1.3!important;}
-    .allocation-guide .star-display{
-      min-height:34px!important;font-size:21px!important;margin:3px 0!important;
-    }
-    .allocation-guide .star-count{font-size:13px!important;margin-bottom:3px!important;}
-    .allocation-guide .mini-btn{
-      width:54px!important;height:38px!important;font-size:22px!important;
-    }
+    .task-strip>div{padding:8px 6px!important;}
 
-    /* 四位机器人司机 */
-    .assistant-intro-screen{
-      padding-top:7px!important;
-    }
-    .assistant-intro-screen{
-      grid-template-rows:auto auto minmax(0,1fr) 52px!important;
-    }
-    .assistant-intro-screen>.guide-title{
-      margin:0!important;
-    }
-    .intro-explain-box{
-      width:min(980px,92vw)!important;
-      padding:7px 12px!important;
-      margin:0!important;
-      font-size:13.5px!important;
-      line-height:1.35!important;
-    }
-    .assistant-intro-screen .assistant-intro-grid{
-      min-height:0;
-      height:100%;
-      align-content:center;
-      width:min(980px,92vw)!important;
-      gap:8px!important;
-    }
-    .assistant-intro-screen .assistant-intro-card{
-      grid-template-columns:64px minmax(0,1fr)!important;
-      gap:9px!important;padding:8px 10px!important;
-    }
-    .assistant-intro-screen .assistant-intro-card .avatar-box{
-      width:58px!important;height:58px!important;
-    }
-    .assistant-intro-screen .assistant-intro-title{
-      font-size:15px!important;margin-bottom:3px!important;
-    }
-    .assistant-intro-screen .state-label{font-size:13px!important;}
-    .assistant-intro-screen .energy-cell{width:36px!important;height:13px!important;}
-    .assistant-intro-screen .assistant-level-note{
-      font-size:12px!important;margin-top:4px!important;
-    }
-
-    /* 练习说明 */
-    .practice-guide{width:min(900px,92vw)!important;}
-    .practice-guide .scale-demo{
-      width:min(600px,88%)!important;margin:7px auto 2px!important;
-    }
-    .practice-guide .scale-demo-circles{gap:14px!important;}
-    .practice-guide .scale-demo-item .circle-scale{
-      width:46px!important;height:46px!important;
-    }
-    .practice-guide .scale-demo-labels{font-size:12px!important;margin-top:2px!important;}
-    .scale-short-note{
-      text-align:center;color:#e5ebf1;font-size:12.5px;line-height:1.3;
-    }
-
-    /* 正式指导语 */
-    .formal-guide{width:min(900px,92vw)!important;}
-    .formal-guide>div[style*="font-size:16px"]{
-      font-size:14px!important;line-height:1.45!important;
-    }
-
-    /* ---------------------------------------------------------
-       trial 页面：同样改用 100svh，绝不延伸到浏览器底部工具栏之后
-       --------------------------------------------------------- */
-    @media (min-width:900px) and (orientation:landscape){
-      html,body,#preload-screen,#login-screen,#jspsych-target,
-      .jspsych-display-element,.jspsych-content-wrapper{
-        height:100svh!important;
-        min-height:100svh!important;
-        max-height:100svh!important;
-      }
-
-      .trial-shell{
-        height:100svh!important;
-        min-height:100svh!important;
-        max-height:100svh!important;
-        grid-template-rows:34px minmax(0,43fr) minmax(0,18fr) minmax(0,39fr)!important;
-      }
-
-      .trial-header{height:34px!important;min-height:34px!important;}
-
-      .scene-zone{padding:2px 0!important;}
-      .scene-image-frame{
-        width:min(84vw,920px)!important;
-        height:min(calc(100% - 22px),420px)!important;
-        max-height:calc(100% - 22px)!important;
-      }
-      .scene-cue{
-        margin-top:2px!important;
-        padding:2px 9px!important;
-        font-size:11.5px!important;
-      }
-
-      .assistant-zone{padding:3px 9px!important;}
-      .assistant-info-card{padding:5px 10px!important;}
-      .assistant-badge{font-size:15px!important;margin-bottom:1px!important;}
-      .assistant-info-main{
-        grid-template-columns:102px minmax(0,1fr)!important;
-        gap:8px!important;
-      }
-      .assistant-info-card .avatar-box{
-        width:52px!important;height:52px!important;
-      }
-      .formal-state-label{font-size:12.5px!important;}
-      .assistant-info-card .energy-cell{
-        width:42px!important;height:14px!important;
-      }
-      .speech-bubble{
-        padding:6px 9px!important;
-        font-size:13px!important;
-        line-height:1.28!important;
-      }
-      .audio-btn{
-        min-width:112px!important;
-        min-height:38px!important;
-        height:38px!important;
-        font-size:13.5px!important;
-        padding:4px 8px!important;
-      }
-      .audio-status{font-size:10px!important;min-height:11px!important;margin-top:1px!important;}
-
-      .rating-zone{
-        padding:2px 10px calc(3px + env(safe-area-inset-bottom))!important;
-        justify-content:flex-start!important;
-      }
-      .rating-topline{
-        min-height:21px!important;height:21px!important;
-      }
-      .rating-progress{font-size:11px!important;}
-      .rating-back{
-        height:25px!important;min-height:25px!important;
-        font-size:10.5px!important;padding:1px 7px!important;
-      }
-      .rating-question{
-        font-size:clamp(18px,1.55vw,22px)!important;
-        line-height:1.15!important;
-        margin:1px 0 3px!important;
-      }
-      .rating-options{
-        width:min(900px,88vw)!important;
-        gap:11px!important;
-      }
-      .rating-option{
-        height:62px!important;
-        min-height:62px!important;
-      }
-      .circle-scale{
-        width:50px!important;height:50px!important;
-      }
-      .rating-anchors{
-        font-size:12px!important;margin-top:2px!important;
-      }
-      .rating-help{
-        font-size:10px!important;margin-top:1px!important;line-height:1.1!important;
-      }
-      .rating-confirm{
-        min-width:165px!important;
-        height:36px!important;
-        min-height:36px!important;
-        margin-top:3px!important;
-        padding:2px 13px!important;
-        font-size:14px!important;
-      }
-    }
-
-    /* iPad / 浏览器可视高度更矮时再自动压缩 */
-    @media (min-width:900px) and (orientation:landscape) and (max-height:780px){
-      .guide-screen{
-        grid-template-rows:minmax(0,1fr) 46px;
-        gap:4px;
-        padding:5px 10px calc(5px + env(safe-area-inset-bottom))!important;
-      }
-      .guide-fit-box{
-        padding:10px 15px!important;
-        font-size:14px!important;
-        line-height:1.36!important;
-      }
-      .guide-screen .guide-title{font-size:21px!important;margin-bottom:6px!important;}
-      .guide-screen .context-box{font-size:14px!important;padding:7px 10px!important;margin-bottom:6px!important;}
-      .guide-screen .child-tip{font-size:12.5px!important;padding:6px 9px!important;margin:5px 0!important;}
-      .screen-action{height:46px;min-height:46px;}
-      .screen-action .continue-btn,.screen-action .action-btn{
-        height:40px!important;min-height:40px!important;font-size:14px!important;
-      }
-
-      .welcome-guide .welcome-visual{padding:7px 9px!important;margin:5px 0!important;}
-      .welcome-guide .welcome-robot .avatar-box{width:70px!important;height:70px!important;}
-      .welcome-guide .feature-row{padding:5px 8px!important;}
-      .task-strip>div{padding:4px 3px;font-size:11.5px;}
-
-      .allocation-guide .allocation-robot-panel{
-        grid-template-columns:62px minmax(0,1fr)!important;
-        padding:5px 8px!important;margin:3px auto 4px!important;
-      }
-      .allocation-guide .allocation-robot-panel .avatar-box{width:54px!important;height:54px!important;}
-      .allocation-guide .star-card{padding:6px 8px!important;}
-      .allocation-guide .star-display{font-size:18px!important;min-height:27px!important;}
-      .allocation-guide .mini-btn{height:34px!important;}
-
-      .practice-guide .scale-demo-item .circle-scale{width:40px!important;height:40px!important;}
-
-      .trial-shell{
-        grid-template-rows:31px minmax(0,42fr) minmax(0,17fr) minmax(0,41fr)!important;
-      }
-      .trial-header{height:31px!important;min-height:31px!important;}
-      .scene-image-frame{width:min(78vw,820px)!important;}
-      .assistant-info-card .avatar-box{width:46px!important;height:46px!important;}
-      .speech-bubble{font-size:12px!important;}
-      .rating-option{height:55px!important;min-height:55px!important;}
-      .circle-scale{width:45px!important;height:45px!important;}
-      .rating-confirm{height:33px!important;min-height:33px!important;}
-    }
-
-
-    /* =========================================================
-       v6：平板横屏“舒适比例版”
-       目标：
-       - 指导页不再被过度缩小；
-       - 继续按钮仍固定可见；
-       - 正式 trial：图片区 > 助手区 > 评分区；
-       - 场景提示放到图片左上方的空白区域；
-       - 三个区域之间保留视觉间距。
-       ========================================================= */
-
-    /* ---------- 指导页：恢复到可读、舒适的尺寸 ---------- */
-    .guide-screen{
-      height:100svh!important;
-      min-height:100svh!important;
-      max-height:100svh!important;
-      grid-template-rows:minmax(0,1fr) 60px!important;
-      gap:8px!important;
-      padding:12px 16px calc(8px + env(safe-area-inset-bottom))!important;
-      align-items:start!important;
-      justify-items:center!important;
-      overflow:hidden!important;
-    }
-    .guide-fit-box{
-      width:min(1120px,90vw)!important;
-      max-height:calc(100svh - 88px)!important;
-      min-height:0!important;
-      overflow:auto!important;
-      padding:20px 26px!important;
-      margin:4px auto 0!important;
-      font-size:17px!important;
-      line-height:1.52!important;
-      border-radius:16px!important;
-    }
-    .guide-screen .guide-title{
-      font-size:29px!important;
-      line-height:1.18!important;
-      margin:0 0 12px!important;
-    }
-    .guide-screen .context-box{
+    /* 小星星页 */
+    .allocation-robot-panel{
+      width:min(760px,94%)!important;
+      grid-template-columns:100px minmax(0,1fr)!important;
+      gap:16px!important;
       padding:12px 16px!important;
-      margin:0 0 11px!important;
-      font-size:17px!important;
-      line-height:1.5!important;
+      margin:12px auto 14px!important;
     }
-    .guide-screen .child-tip{
-      padding:10px 14px!important;
-      margin:9px 0!important;
-      font-size:15.5px!important;
-      line-height:1.5!important;
+    .allocation-robot-panel .avatar-box{width:88px!important;height:88px!important;}
+    .allocation-robot-text{font-size:17px!important;line-height:1.55!important;}
+    .star-allocation-wrap{
+      width:min(850px,96%)!important;
+      gap:22px!important;
+      margin:15px auto!important;
     }
-    .screen-action{
-      height:60px!important;
-      min-height:60px!important;
+    .star-card{padding:16px 18px!important;}
+    .star-title{font-size:20px!important;}
+    .star-desc{font-size:14px!important;line-height:1.4!important;}
+    .star-display{font-size:25px!important;min-height:42px!important;}
+    .allocation-controls{
+      grid-template-columns:62px 62px!important;
+      gap:16px!important;
+      justify-content:center!important;
+    }
+    .mini-btn{
+      width:60px!important;height:44px!important;
+      padding:0!important;
+      display:flex!important;align-items:center!important;justify-content:center!important;
+      font-size:24px!important;
+    }
+
+    /* 机器人介绍页 */
+    .assistant-intro-screen{
+      height:auto!important;
+      min-height:100svh!important;
+      max-height:none!important;
       display:flex!important;
+      padding:26px 18px 42px!important;
+    }
+    .assistant-intro-grid{
+      width:min(1060px,92vw)!important;
+      height:auto!important;
+      min-height:0!important;
+      gap:14px!important;
+      margin:0 auto!important;
+    }
+    .assistant-intro-card{
+      grid-template-columns:85px minmax(0,1fr)!important;
+      gap:14px!important;
+      padding:14px 16px!important;
+    }
+    .assistant-intro-card .avatar-box{width:78px!important;height:78px!important;}
+    .assistant-intro-title{font-size:18px!important;}
+    .assistant-level-note{font-size:14px!important;}
+    .intro-explain-box{
+      width:min(1060px,92vw)!important;
+      padding:12px 16px!important;
+      font-size:16px!important;
+      line-height:1.5!important;
+    }
+
+    /* 练习说明中的5个圆 */
+    .scale-demo{width:min(680px,88%)!important;}
+    .scale-demo-item .circle-scale{width:54px!important;height:54px!important;}
+
+    /* ---------- 正式/练习 trial：不锁死高度，允许自然滚动 ---------- */
+    .trial-shell{
+      width:100%!important;
+      height:auto!important;
+      min-height:100svh!important;
+      max-height:none!important;
+      display:flex!important;
+      flex-direction:column!important;
+      overflow:visible!important;
+      background:#15161c!important;
+      padding-bottom:32px!important;
+    }
+
+    .trial-header{
+      position:sticky!important;
+      top:0!important;
+      z-index:30!important;
+      height:40px!important;
+      min-height:40px!important;
+      padding:7px 28px!important;
+      font-size:13px!important;
+      background:#171820!important;
+      border-bottom:1px solid #343640!important;
+    }
+
+    /* 图片区 */
+    .scene-zone{
+      position:relative!important;
+      width:100%!important;
+      min-height:0!important;
+      height:auto!important;
+      padding:18px 0 14px!important;
+      overflow:visible!important;
+      background:#171820!important;
+      border:0!important;
+      display:flex!important;
+      flex-direction:column!important;
       align-items:center!important;
       justify-content:center!important;
     }
-    .screen-action .continue-btn,
-    .screen-action .action-btn{
-      min-width:210px!important;
-      height:48px!important;
-      min-height:48px!important;
-      padding:6px 24px!important;
-      font-size:17px!important;
-      border-radius:11px!important;
+
+    .scene-image-frame{
+      width:min(74vw,960px)!important;
+      height:auto!important;
+      max-width:960px!important;
+      max-height:none!important;
+      aspect-ratio:637/315!important;
     }
 
-    /* 首页 */
-    .welcome-guide{width:min(1120px,90vw)!important;}
-    .welcome-guide .welcome-visual{
-      grid-template-columns:138px minmax(0,1fr)!important;
-      gap:18px!important;
-      padding:13px 15px!important;
-      margin:10px 0!important;
-    }
-    .welcome-guide .welcome-robot .avatar-box{
-      width:104px!important;height:104px!important;
-    }
-    .welcome-guide .feature-stack{gap:10px!important;}
-    .welcome-guide .feature-row{
-      grid-template-columns:120px 122px minmax(0,1fr)!important;
-      gap:12px!important;
-      padding:9px 12px!important;
-    }
-    .welcome-guide .feature-name{font-size:19px!important;}
-    .welcome-guide .feature-explain{font-size:15px!important;line-height:1.4!important;}
-    .welcome-guide .feature-row .energy-cell{width:47px!important;height:16px!important;}
-    .task-strip-title{font-size:15px!important;margin:8px 0 6px!important;}
-    .task-strip{gap:9px!important;font-size:14px!important;}
-    .task-strip>div{padding:7px 6px!important;}
-
-    /* 星星页 */
-    .allocation-guide{width:min(1080px,90vw)!important;}
-    .allocation-guide .allocation-robot-panel{
-      width:min(760px,92%)!important;
-      grid-template-columns:92px minmax(0,1fr)!important;
-      gap:14px!important;
-      margin:8px auto 10px!important;
-      padding:10px 13px!important;
-    }
-    .allocation-guide .allocation-robot-panel .avatar-box{
-      width:80px!important;height:80px!important;
-    }
-    .allocation-guide .allocation-robot-text{
-      font-size:16px!important;line-height:1.48!important;
-    }
-    .allocation-guide .star-allocation-wrap{
-      gap:18px!important;margin:10px 0 5px!important;
-    }
-    .allocation-guide .star-card{
-      padding:12px 14px!important;
-      max-width:400px!important;
-    }
-    .allocation-guide .star-title{font-size:19px!important;}
-    .allocation-guide .star-desc{font-size:13.5px!important;line-height:1.35!important;}
-    .allocation-guide .star-display{font-size:23px!important;min-height:36px!important;margin:4px 0!important;}
-    .allocation-guide .star-count{font-size:14px!important;}
-    .allocation-guide .mini-btn{
-      width:58px!important;height:40px!important;font-size:23px!important;
-      display:flex!important;align-items:center!important;justify-content:center!important;
-      padding:0!important;
-    }
-
-    /* 四个机器人介绍 */
-    .assistant-intro-screen{
-      grid-template-rows:auto auto minmax(0,1fr) 60px!important;
-      padding-top:10px!important;
-    }
-    .assistant-intro-screen>.guide-title{
-      font-size:27px!important;
-      margin:0 0 6px!important;
-    }
-    .intro-explain-box{
-      width:min(1060px,90vw)!important;
-      padding:9px 14px!important;
-      font-size:15px!important;
+    /* 场景提示放左上空白区 */
+    .scene-cue{
+      position:absolute!important;
+      left:clamp(18px,2.5vw,40px)!important;
+      top:22px!important;
+      width:min(190px,16vw)!important;
+      margin:0!important;
+      padding:8px 11px!important;
+      border-radius:10px!important;
+      background:rgba(35,37,47,.96)!important;
+      border:1px solid #4a4e59!important;
+      font-size:13px!important;
       line-height:1.45!important;
+      text-align:left!important;
+      z-index:10!important;
+      box-shadow:0 3px 12px rgba(0,0,0,.28)!important;
     }
-    .assistant-intro-screen .assistant-intro-grid{
-      width:min(1060px,90vw)!important;
+
+    /* 助手区 */
+    .assistant-zone{
+      width:min(1120px,94vw)!important;
+      height:auto!important;
+      min-height:0!important;
+      margin:14px auto 0!important;
+      padding:14px 18px!important;
+      overflow:visible!important;
+      border:1px solid #454853!important;
+      border-radius:14px!important;
+      background:#24252e!important;
+    }
+
+    .assistant-info-card{
+      width:100%!important;
+      height:auto!important;
+      min-height:0!important;
+      padding:10px 14px!important;
+      background:transparent!important;
+      border:0!important;
+      box-shadow:none!important;
+    }
+
+    .assistant-badge{
+      font-size:19px!important;
+      margin-bottom:8px!important;
+    }
+
+    .assistant-info-main{
+      grid-template-columns:140px minmax(0,1fr)!important;
+      gap:18px!important;
+    }
+
+    .formal-state-label{font-size:16px!important;}
+    .assistant-info-card .energy-cell{width:52px!important;height:18px!important;}
+    .assistant-info-card .avatar-box{width:74px!important;height:74px!important;}
+
+    .assistant-prompt-wrap{gap:14px!important;}
+    .speech-bubble{
+      padding:11px 14px!important;
+      font-size:16px!important;
+      line-height:1.5!important;
+      border-radius:12px!important;
+    }
+    .audio-btn{
+      min-width:145px!important;
+      min-height:48px!important;
+      padding:8px 13px!important;
+      font-size:16px!important;
+    }
+    .audio-status{font-size:12px!important;margin-top:4px!important;}
+
+    /* 评分区：窄一些、居中，不再横跨整个页面 */
+    .rating-zone{
+      width:min(820px,76vw)!important;
+      height:auto!important;
+      min-height:0!important;
+      margin:16px auto 34px!important;
+      padding:14px 18px 18px!important;
+      overflow:visible!important;
+      border:1px solid #454853!important;
+      border-radius:14px!important;
+      background:#2a2b34!important;
+      display:flex!important;
+      flex-direction:column!important;
+      align-items:center!important;
+      justify-content:flex-start!important;
+    }
+
+    .rating-topline{
+      width:100%!important;
+      min-height:26px!important;
+      height:auto!important;
+    }
+
+    .rating-progress{font-size:13px!important;}
+    .rating-back{
+      min-height:30px!important;
+      padding:3px 10px!important;
+      font-size:12px!important;
+    }
+
+    .rating-question{
+      width:100%!important;
+      max-width:760px!important;
+      font-size:clamp(20px,1.8vw,26px)!important;
+      line-height:1.25!important;
+      margin:5px 0 10px!important;
+    }
+
+    .rating-options{
+      width:100%!important;
+      max-width:720px!important;
       gap:12px!important;
-      align-content:center!important;
-    }
-    .assistant-intro-screen .assistant-intro-card{
-      grid-template-columns:76px minmax(0,1fr)!important;
-      gap:12px!important;
-      padding:11px 13px!important;
-    }
-    .assistant-intro-screen .assistant-intro-card .avatar-box{
-      width:70px!important;height:70px!important;
-    }
-    .assistant-intro-screen .assistant-intro-title{font-size:17px!important;}
-    .assistant-intro-screen .state-label{font-size:14.5px!important;}
-    .assistant-intro-screen .energy-cell{width:43px!important;height:15px!important;}
-    .assistant-intro-screen .assistant-level-note{font-size:13.5px!important;}
-
-    /* 练习说明页 */
-    .practice-guide{width:min(980px,88vw)!important;}
-    .practice-guide .scale-demo{
-      width:min(650px,86%)!important;margin:10px auto 4px!important;
-    }
-    .practice-guide .scale-demo-item .circle-scale{
-      width:50px!important;height:50px!important;
-    }
-    .practice-guide .scale-demo-labels{font-size:13px!important;}
-    .scale-short-note{font-size:13.5px!important;}
-
-    /* 正式说明页 */
-    .formal-guide{width:min(980px,88vw)!important;}
-    .formal-guide>div[style*="font-size:16px"]{
-      font-size:15.5px!important;line-height:1.55!important;
     }
 
-    /* ---------- 正式 / 练习 trial：重新分配空间 ---------- */
-    @media (min-width:900px) and (orientation:landscape){
-
-      html,body,#jspsych-target,.jspsych-display-element,.jspsych-content-wrapper{
-        height:100svh!important;
-        min-height:100svh!important;
-        max-height:100svh!important;
-        overflow:hidden!important;
-      }
-
-      .trial-shell{
-        height:100svh!important;
-        min-height:100svh!important;
-        max-height:100svh!important;
-        display:grid!important;
-        grid-template-rows:34px minmax(0,47fr) minmax(0,26fr) minmax(0,27fr)!important;
-        row-gap:6px!important;
-        background:#15161c!important;
-        overflow:hidden!important;
-      }
-
-      .trial-header{
-        height:34px!important;
-        min-height:34px!important;
-        padding:3px 30px!important;
-        font-size:12.5px!important;
-        background:#171820!important;
-      }
-
-      /* 图片区：最大，并让场景提示悬在左上方空白区域 */
-      .scene-zone{
-        position:relative!important;
-        min-height:0!important;
-        padding:5px 0!important;
-        border:0!important;
-        background:#171820!important;
-        overflow:hidden!important;
-        display:flex!important;
-        align-items:center!important;
-        justify-content:center!important;
-      }
-      .scene-image-frame{
-        width:min(70vw,920px)!important;
-        height:auto!important;
-        max-height:calc(100% - 8px)!important;
-        aspect-ratio:637/315!important;
-      }
-      .scene-cue{
-        position:absolute!important;
-        z-index:6!important;
-        left:clamp(16px,2.2vw,36px)!important;
-        top:12px!important;
-        width:min(190px,16vw)!important;
-        margin:0!important;
-        padding:7px 10px!important;
-        border-radius:10px!important;
-        background:rgba(35,37,47,.94)!important;
-        border:1px solid #4a4e59!important;
-        color:#dce3ea!important;
-        font-size:13px!important;
-        line-height:1.38!important;
-        text-align:left!important;
-        box-shadow:0 3px 10px rgba(0,0,0,.25)!important;
-      }
-
-      /* 助手区：给语音与机器人更多呼吸空间 */
-      .assistant-zone{
-        min-height:0!important;
-        padding:7px 18px!important;
-        margin:0 18px!important;
-        border:1px solid #3f414b!important;
-        border-radius:12px!important;
-        background:#22232b!important;
-        overflow:hidden!important;
-      }
-      .assistant-info-card{
-        width:min(1180px,92vw)!important;
-        padding:8px 14px!important;
-        border:0!important;
-        background:transparent!important;
-        box-shadow:none!important;
-      }
-      .assistant-badge{
-        font-size:18px!important;
-        line-height:1.2!important;
-        margin-bottom:5px!important;
-      }
-      .assistant-info-main{
-        grid-template-columns:128px minmax(0,1fr)!important;
-        gap:16px!important;
-      }
-      .assistant-left-stack{gap:5px!important;}
-      .formal-state-label{font-size:15px!important;}
-      .assistant-info-card .energy-cell{width:49px!important;height:17px!important;}
-      .assistant-info-card .avatar-box{width:68px!important;height:68px!important;}
-      .assistant-prompt-wrap{gap:12px!important;}
-      .speech-bubble{
-        padding:9px 12px!important;
-        font-size:15px!important;
-        line-height:1.42!important;
-        border-radius:12px!important;
-      }
-      .audio-btn{
-        min-width:132px!important;
-        min-height:44px!important;
-        height:44px!important;
-        padding:6px 11px!important;
-        font-size:15px!important;
-      }
-      .audio-status{
-        font-size:11.5px!important;
-        min-height:14px!important;
-        margin-top:3px!important;
-      }
-
-      /* 评分区：更紧凑，把多余高度让给中间区域 */
-      .rating-zone{
-        min-height:0!important;
-        padding:5px 18px calc(5px + env(safe-area-inset-bottom))!important;
-        margin:0 18px 6px!important;
-        border:1px solid #454853!important;
-        border-radius:12px!important;
-        background:#2a2b34!important;
-        overflow:hidden!important;
-        justify-content:center!important;
-      }
-      .rating-topline{
-        width:min(1020px,90vw)!important;
-        min-height:22px!important;
-        height:22px!important;
-      }
-      .rating-progress{font-size:12px!important;}
-      .rating-back{
-        height:27px!important;
-        min-height:27px!important;
-        padding:2px 8px!important;
-        font-size:11px!important;
-      }
-      .rating-question{
-        width:min(1040px,92vw)!important;
-        font-size:clamp(19px,1.65vw,24px)!important;
-        line-height:1.18!important;
-        margin:2px 0 5px!important;
-      }
-      .rating-options{
-        width:min(950px,86vw)!important;
-        gap:14px!important;
-      }
-      .rating-option{
-        height:62px!important;
-        min-height:62px!important;
-        border-radius:12px!important;
-      }
-      .circle-scale{
-        width:51px!important;
-        height:51px!important;
-      }
-      .rating-anchors{
-        width:min(950px,86vw)!important;
-        margin-top:3px!important;
-        font-size:12.5px!important;
-      }
-      .rating-help{
-        margin-top:1px!important;
-        font-size:10.5px!important;
-        line-height:1.15!important;
-      }
-      .rating-confirm{
-        min-width:175px!important;
-        height:37px!important;
-        min-height:37px!important;
-        margin-top:4px!important;
-        padding:3px 15px!important;
-        font-size:14.5px!important;
-      }
+    .rating-option{
+      height:72px!important;
+      min-height:72px!important;
+      border-radius:13px!important;
     }
 
-    /* 更矮的平板：只做轻度压缩，不再把整页缩成小卡片 */
-    @media (min-width:900px) and (orientation:landscape) and (max-height:700px){
-      .guide-fit-box{
-        padding:15px 20px!important;
-        font-size:15.5px!important;
-        line-height:1.42!important;
-      }
-      .guide-screen .guide-title{font-size:25px!important;}
-      .guide-screen .context-box{font-size:15.5px!important;}
-      .welcome-guide .welcome-robot .avatar-box{width:88px!important;height:88px!important;}
-      .welcome-guide .feature-explain{font-size:13.5px!important;}
-      .task-strip{font-size:12.5px!important;}
+    .circle-scale{
+      width:54px!important;
+      height:54px!important;
+      border-width:3px!important;
+    }
 
-      .trial-shell{
-        grid-template-rows:32px minmax(0,46fr) minmax(0,27fr) minmax(0,27fr)!important;
-        row-gap:5px!important;
-      }
-      .trial-header{height:32px!important;min-height:32px!important;}
-      .scene-image-frame{width:min(66vw,820px)!important;}
-      .scene-cue{width:min(170px,16vw)!important;font-size:12px!important;}
-      .assistant-info-card .avatar-box{width:60px!important;height:60px!important;}
-      .speech-bubble{font-size:13.5px!important;}
-      .rating-option{height:56px!important;min-height:56px!important;}
-      .circle-scale{width:46px!important;height:46px!important;}
-      .rating-confirm{height:34px!important;min-height:34px!important;}
+    .rating-anchors{
+      width:100%!important;
+      max-width:720px!important;
+      margin-top:5px!important;
+      font-size:13px!important;
+    }
+
+    .rating-help{
+      margin-top:4px!important;
+      font-size:11.5px!important;
+      line-height:1.3!important;
+    }
+
+    .rating-confirm{
+      min-width:185px!important;
+      min-height:42px!important;
+      margin-top:10px!important;
+      padding:7px 18px!important;
+      font-size:15px!important;
+    }
+
+    /* 平板横屏稍窄时：保持滚动，不再强行压缩到一屏 */
+    @media (min-width:700px) and (orientation:landscape) and (max-width:1100px){
+      .scene-image-frame{width:min(70vw,820px)!important;}
+      .scene-cue{width:155px!important;font-size:12px!important;}
+      .assistant-zone{width:92vw!important;}
+      .rating-zone{width:min(800px,80vw)!important;}
     }
 
   </style>
@@ -1884,8 +1549,8 @@
     return {
       type:jsPsychHtmlKeyboardResponse,
       choices:'NO_KEYS',
-      stimulus:`<div class="fullscreen-container guide-screen">
-        <div class="guide-box guide-fit-box welcome-guide">
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box" style="width:min(980px,94vw);padding:22px 28px;">
           <div class="guide-title" style="margin-bottom:13px;">今天来体验一次驾车游戏</div>
 
           <div class="context-box" style="margin-bottom:12px;">
@@ -1916,15 +1581,13 @@
             后面会遇到不同的机器人司机。<b>不用记住前面的司机</b>，每一段路只看现在出现的这位就可以。
           </div>
 
-          <div class="task-strip-title">接下来我们会：</div>
-          <div class="task-strip">
-            <div>① 小星星任务</div>
-            <div>② 认识机器人司机</div>
-            <div>③ 练习两次</div>
-            <div>④ 正式驾车游戏</div>
-          </div>
+          <b>接下来我们会：</b><br>
+          ① 完成一个<span class="highlight">小星星任务</span>；<br>
+          ② 认识四位<span class="highlight">机器人司机</span>；<br>
+          ③ 练习两次；<br>
+          ④ 开始正式的驾车游戏。
         </div>
-        <div class="screen-action"><button id="welcome-next" class="continue-btn">我准备好了</button></div>
+        <div style="margin-top:13px;"><button id="welcome-next" class="continue-btn">我准备好了</button></div>
       </div>`,
       data:{Event_Type:'Welcome'},
       on_load:()=>document.getElementById('welcome-next').addEventListener('click',()=>jsPsych.finishTrial())
@@ -1936,9 +1599,9 @@
     return {
       type:jsPsychHtmlKeyboardResponse,
       choices:'NO_KEYS',
-      stimulus:`<div class="fullscreen-container guide-screen">
-        <div class="guide-box guide-fit-box allocation-guide">
-          <div class="guide-title">小星星任务</div>
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box" style="width:min(980px,94vw);padding:21px 28px;">
+          <div class="guide-title" style="margin-bottom:12px;">小星星任务</div>
 
           <div class="allocation-robot-panel">
             ${avatarHTML()}
@@ -1982,8 +1645,8 @@
             </div>
           </div>
 
+          <div style="text-align:center;"><button id="allocation-submit" class="action-btn">这样分就可以</button></div>
         </div>
-        <div class="screen-action"><button id="allocation-submit" class="action-btn">这样分就可以</button></div>
       </div>`,
       data:{Event_Type:'Baseline_Allocation'},
       on_load:function(){
@@ -2020,9 +1683,9 @@
     return {
       type:jsPsychHtmlKeyboardResponse,
       choices:'NO_KEYS',
-      stimulus:`<div class="fullscreen-container guide-screen assistant-intro-screen">
+      stimulus:`<div class="fullscreen-container" style="justify-content:flex-start;padding-top:13px;">
         <div class="guide-title" style="margin-bottom:8px;">认识四位机器人司机</div>
-        <div class="guide-box intro-explain-box">
+        <div class="guide-box" style="width:min(1040px,94vw);padding:11px 18px;margin-bottom:9px;font-size:16px;line-height:1.55;">
           <span class="ability-text">绿色</span>告诉你机器人司机的<b>开车能力</b>，
           <span class="emotion-text">橙色</span>告诉你它<b>关心乘客</b>这一方面。
           看一看亮了几格，再看看下面的小提示就可以。
@@ -2033,7 +1696,7 @@
           ${makeAssistantIntroCard('HighEmotion')}
           ${makeAssistantIntroCard('LowEmotion')}
         </div>
-        <div class="screen-action"><button id="assistant-next" class="continue-btn">我认识他们了</button></div>
+        <div style="margin:11px 0 6px;"><button id="assistant-next" class="continue-btn">我认识他们了</button></div>
       </div>`,
       data:{Event_Type:'Assistant_Introduction'},
       on_load:()=>document.getElementById('assistant-next').addEventListener('click',()=>jsPsych.finishTrial())
@@ -2044,9 +1707,9 @@
     return {
       type:jsPsychHtmlKeyboardResponse,
       choices:'NO_KEYS',
-      stimulus:`<div class="fullscreen-container guide-screen">
-        <div class="guide-box guide-fit-box practice-guide">
-          <div class="guide-title">先练习两次</div>
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box" style="width:min(900px,92vw);padding:21px 28px;">
+          <div class="guide-title" style="margin-bottom:12px;">先练习两次</div>
           <div class="context-box" style="margin-bottom:10px;">
             每一次先看清楚道路，再看看现在的<span class="highlight">机器人司机</span>。
             然后点一下<span class="highlight">🔊 听机器人说</span>，认真听完它说的话。
@@ -2062,14 +1725,14 @@
                 <span>一点也不</span><span>非常</span>
               </div>
             </div>
-            <div class="scale-short-note">圆圈越满，表示越接近右边。</div>
+            <div style="text-align:center;color:#e5ebf1;font-size:14px;">圆圈越满，表示你的想法越多、越接近右边。</div>
           </div>
 
           <div style="font-size:16px;line-height:1.6;">
             练习没有对错。如果没有听清楚，可以点<span class="highlight">“再听一次”</span>。
           </div>
         </div>
-        <div class="screen-action"><button id="practice-start" class="continue-btn">开始练习</button></div>
+        <div style="margin-top:13px;"><button id="practice-start" class="continue-btn">开始练习</button></div>
       </div>`,
       data:{Event_Type:'Practice_Instruction'},
       on_load:()=>document.getElementById('practice-start').addEventListener('click',()=>jsPsych.finishTrial())
@@ -2080,9 +1743,9 @@
     return {
       type:jsPsychHtmlKeyboardResponse,
       choices:'NO_KEYS',
-      stimulus:`<div class="fullscreen-container guide-screen">
-        <div class="guide-box guide-fit-box formal-guide">
-          <div class="guide-title">正式驾车游戏要开始啦</div>
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box" style="width:min(900px,92vw);padding:21px 28px;">
+          <div class="guide-title" style="margin-bottom:12px;">正式驾车游戏要开始啦</div>
           <div class="context-box" style="margin-bottom:10px;">
             请继续想象你坐在汽车后排。接下来会经过一段一段不同的道路，
             每一次都有一位<span class="highlight">机器人司机</span>来帮助汽车开车。
@@ -2102,7 +1765,7 @@
             没有正确答案，说出你自己的想法就可以。
           </div>
         </div>
-        <div class="screen-action"><button id="formal-start" class="continue-btn">开始正式游戏</button></div>
+        <div style="margin-top:13px;"><button id="formal-start" class="continue-btn">开始正式游戏</button></div>
       </div>`,
       data:{Event_Type:'Formal_Instruction'},
       on_load:function(){
@@ -2115,7 +1778,7 @@
   }
 
   function createRestNode(){
-    return {type:jsPsychHtmlKeyboardResponse,choices:'NO_KEYS',stimulus:`<div class="fullscreen-container guide-screen"><div class="guide-box guide-fit-box" style="text-align:center;"><div class="guide-title" style="color:var(--green);">已经完成一半啦</div><div class="context-box" style="text-align:center;">你可以休息一下，看看远处、活动一下。准备好了以后，我们再继续后面的驾车游戏。</div></div><div class="screen-action"><button id="rest-continue" class="continue-btn">我准备好了，继续</button></div></div>`,data:{Event_Type:'Rest_Break'},on_load:()=>document.getElementById('rest-continue').addEventListener('click',()=>jsPsych.finishTrial())};
+    return {type:jsPsychHtmlKeyboardResponse,choices:'NO_KEYS',stimulus:`<div class="fullscreen-container"><div class="guide-box" style="text-align:center;"><div class="guide-title" style="color:var(--green);">已经完成一半啦</div><div class="context-box" style="text-align:center;">你可以休息一下，看看远处、活动一下。准备好了以后，我们再继续后面的驾车游戏。</div></div><div style="margin-top:18px;"><button id="rest-continue" class="continue-btn">我准备好了，继续</button></div></div>`,data:{Event_Type:'Rest_Break'},on_load:()=>document.getElementById('rest-continue').addEventListener('click',()=>jsPsych.finishTrial())};
   }
 
   function ratingButtonsHTML(){
@@ -2243,7 +1906,7 @@
       console.warn('儿童版测试模式：使用编号回退风险条件',dataPipeCondition);
     }
     riskGroup=dataPipeCondition===0?'Low':'High';
-    currentVersion=`Exp1b_Child_v6_DP${dataPipeCondition}_${riskGroup}_${SEQUENCE_NAME}`;
+    currentVersion=`Exp1b_Child_v7_DP${dataPipeCondition}_${riskGroup}_${SEQUENCE_NAME}`;
     jsPsych.data.addProperties({Subject_ID:currentSubjectId,Session_UUID:sessionUUID,Age_Group:AGE_GROUP,DataPipe_Condition:dataPipeCondition,Version:currentVersion,Sequence:SEQUENCE_NAME,Rating_Format:RATING_FORMAT,Risk_Level:riskGroup,Browser_Context:getBrowserContext(),User_Agent:navigator.userAgent||'',Image_Format:IMAGE_FORMAT});
     experimentStartedAtMs=Date.now();document.getElementById('login-screen').classList.add('hidden');document.getElementById('jspsych-target').innerHTML='';
 
