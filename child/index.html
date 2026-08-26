@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-  <title>实验1b｜智驾乘车体验（儿童版）</title>
+  <title>实验1b｜机器人驾车游戏（儿童版）</title>
 
   <!-- 与成人1b / 实验3a保持相同的本地 jsPsych 目录结构 -->
   <script src="../jspsych/jspsych.js"></script>
@@ -338,9 +338,217 @@
       #tablet-orientation-tip{display:block!important;}
     }
 
+
+    /* =========================================================
+       v4：平板横屏视觉优化
+       ========================================================= */
+
+    #orientation-overlay{
+      display:none;position:fixed;inset:0;z-index:999999;
+      background:rgba(20,20,26,.97);align-items:center;justify-content:center;
+      padding:30px;text-align:center;
+    }
+    .orientation-card{
+      width:min(620px,88vw);background:var(--panel);border:1px solid var(--line);
+      border-radius:18px;padding:30px;color:white;
+    }
+    @media (min-width:700px) and (orientation:portrait){
+      #orientation-overlay{display:flex;}
+    }
+
+    /* 欢迎页：机器人 + 两种信息直观展示 */
+    .welcome-visual{
+      display:grid;grid-template-columns:150px minmax(0,1fr);gap:22px;align-items:center;
+      background:#22242d;border:1px solid #4b5260;border-radius:14px;
+      padding:16px 18px;margin:14px 0 16px;
+    }
+    .welcome-robot{display:flex;align-items:center;justify-content:center;}
+    .welcome-robot .avatar-box{width:118px;height:118px;}
+    .feature-stack{display:flex;flex-direction:column;gap:12px;}
+    .feature-row{
+      display:grid;grid-template-columns:120px 122px minmax(0,1fr);
+      gap:12px;align-items:center;padding:10px 12px;border-radius:11px;background:#191b22;
+      border:1px solid #404653;
+    }
+    .feature-name{font-size:19px;font-weight:900;}
+    .feature-explain{font-size:15px;line-height:1.5;color:#d8e0e8;}
+    .feature-row .energy-cell{width:50px;height:18px;}
+
+    /* 星星任务：机器人居中 + 两个功能视觉化 */
+    .allocation-robot-panel{
+      display:grid;grid-template-columns:100px minmax(0,1fr);gap:15px;align-items:center;
+      width:min(660px,92%);margin:10px auto 12px;padding:11px 14px;
+      background:#22242d;border:1px solid #4b5260;border-radius:12px;
+    }
+    .allocation-robot-panel .avatar-box{width:88px;height:88px;}
+    .allocation-robot-text{font-size:17px;line-height:1.6;color:#e9eef3;}
+    .star-card .mini-feature{
+      display:flex;flex-direction:column;align-items:center;gap:5px;margin:7px 0 2px;
+    }
+    .star-card .mini-feature .energy-cell{width:48px;height:17px;}
+    .allocation-controls{
+      display:grid!important;grid-template-columns:58px 58px;justify-content:center;
+      align-items:center;gap:14px!important;width:100%;
+    }
+    .mini-btn{display:flex;align-items:center;justify-content:center;padding:0;margin:0 auto;}
+
+    /* 四位机器人介绍：显示水平含义 */
+    .assistant-intro-grid{width:min(1040px,94vw);gap:12px;}
+    .assistant-intro-card{
+      grid-template-columns:82px minmax(0,1fr);gap:13px;padding:12px 14px;
+    }
+    .assistant-intro-card .avatar-box{width:74px;height:74px;}
+    .assistant-level-note{
+      margin-top:7px;font-size:14px;font-weight:900;line-height:1.4;
+      color:#e7edf3;
+    }
+
+    /* 练习页的五级图形演示：五个圆大小完全一致 */
+    .scale-demo{width:min(650px,90%);margin:12px auto 4px;}
+    .scale-demo-circles{
+      display:grid;grid-template-columns:repeat(5,1fr);gap:18px;align-items:center;
+    }
+    .scale-demo-item{display:flex;justify-content:center;align-items:center;}
+    .scale-demo-item .circle-scale{width:54px;height:54px;}
+    .scale-demo-labels{
+      display:grid;grid-template-columns:1fr 1fr;margin-top:5px;
+      font-size:13px;color:var(--muted);font-weight:800;
+    }
+    .scale-demo-labels span:first-child{text-align:left;}
+    .scale-demo-labels span:last-child{text-align:right;}
+
+    /* ---------------------------------------------------------
+       正式 trial：以平板横屏为第一目标
+       --------------------------------------------------------- */
+    @media (min-width:900px) and (orientation:landscape){
+      html,body,#jspsych-target,.jspsych-display-element,.jspsych-content-wrapper{
+        width:100%;height:100dvh;min-height:100dvh;overflow:hidden;
+      }
+      .jspsych-content{height:100%;}
+
+      .trial-shell{
+        width:100%;height:100dvh;min-height:100dvh;
+        display:grid;
+        grid-template-rows:38px minmax(0,44fr) minmax(0,18fr) minmax(0,38fr);
+        overflow:hidden;
+      }
+      .trial-header{
+        min-height:0;height:38px;padding:3px 34px;font-size:13px;
+      }
+
+      /* 图片显著放大 */
+      .scene-zone{
+        min-height:0!important;padding:4px 0 3px!important;overflow:hidden;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+      }
+      .scene-image-frame{
+        width:min(82vw,900px)!important;
+        max-width:900px;
+        height:min(calc(100% - 28px),430px)!important;
+        max-height:calc(100% - 28px)!important;
+        aspect-ratio:637/315;
+      }
+      .scene-image{object-fit:contain;}
+      .scene-cue{
+        flex:0 0 auto;margin-top:3px!important;padding:3px 10px!important;
+        font-size:12px!important;line-height:1.2!important;
+      }
+
+      /* 中部信息卡压缩，文字是辅助，语音是主要输入 */
+      .assistant-zone{
+        min-height:0!important;padding:4px 10px!important;overflow:hidden;
+      }
+      .assistant-info-card{
+        width:min(1040px,92vw)!important;padding:6px 12px!important;
+        border-radius:12px;
+      }
+      .assistant-badge{
+        font-size:17px!important;margin-bottom:2px!important;line-height:1.2;
+      }
+      .assistant-info-main{
+        grid-template-columns:118px minmax(0,1fr)!important;
+        gap:10px!important;
+      }
+      .assistant-left-stack{gap:2px!important;}
+      .formal-state-row{gap:2px!important;}
+      .formal-state-label{font-size:14px!important;}
+      .assistant-info-card .energy-cell{width:52px;height:17px;}
+      .assistant-info-card .avatar-box{width:64px!important;height:64px!important;}
+      .assistant-prompt-wrap{gap:9px!important;}
+      .speech-bubble{
+        padding:7px 10px!important;font-size:14px!important;line-height:1.35!important;
+      }
+      .audio-btn{
+        min-width:122px!important;min-height:44px!important;
+        font-size:15px!important;padding:7px 10px!important;
+      }
+      .audio-status{font-size:11px!important;margin-top:2px!important;min-height:13px!important;}
+
+      /* 下部评分：固定在屏内，圆更大，确认按钮不再出框 */
+      .rating-zone{
+        min-height:0!important;height:100%!important;
+        justify-content:flex-start!important;overflow:hidden!important;
+        padding:3px 12px calc(5px + env(safe-area-inset-bottom))!important;
+      }
+      .rating-topline{
+        width:min(940px,92vw)!important;min-height:24px!important;height:24px;
+      }
+      .rating-progress{font-size:12px!important;}
+      .rating-back{
+        min-height:28px!important;height:28px;padding:2px 9px!important;font-size:11px!important;
+      }
+      .rating-question{
+        width:min(980px,94vw)!important;
+        font-size:clamp(19px,1.7vw,24px)!important;
+        line-height:1.2!important;margin:1px 0 5px!important;
+      }
+      .rating-options{
+        width:min(900px,88vw)!important;gap:14px!important;
+      }
+      .rating-option{
+        min-height:70px!important;height:70px!important;border-radius:12px!important;
+      }
+      .circle-scale{
+        width:55px!important;height:55px!important;border-width:3px!important;
+      }
+      .rating-anchors{
+        width:min(900px,88vw)!important;margin-top:3px!important;
+        font-size:13px!important;
+      }
+      .rating-help{
+        font-size:11px!important;margin-top:1px!important;line-height:1.2!important;
+      }
+      .rating-confirm{
+        margin-top:4px!important;min-width:170px!important;
+        min-height:40px!important;height:40px!important;
+        padding:4px 16px!important;font-size:15px!important;
+      }
+    }
+
+    /* 高度较矮的平板浏览器再压缩一点，避免底部被浏览器工具栏遮住 */
+    @media (min-width:900px) and (orientation:landscape) and (max-height:720px){
+      .trial-shell{
+        grid-template-rows:34px minmax(0,42fr) minmax(0,18fr) minmax(0,40fr);
+      }
+      .trial-header{height:34px;}
+      .scene-image-frame{width:min(76vw,790px)!important;}
+      .assistant-info-card .avatar-box{width:56px!important;height:56px!important;}
+      .speech-bubble{font-size:13px!important;}
+      .rating-option{min-height:62px!important;height:62px!important;}
+      .circle-scale{width:49px!important;height:49px!important;}
+      .rating-confirm{min-height:36px!important;height:36px!important;}
+    }
+
   </style>
 </head>
 <body>
+<div id="orientation-overlay">
+  <div class="orientation-card">
+    <div style="font-size:42px;margin-bottom:10px;">↔️</div>
+    <div style="font-size:25px;font-weight:900;margin-bottom:8px;">请把平板横过来</div>
+    <div style="font-size:16px;color:#d5dde6;line-height:1.6;">本实验按照平板横屏进行设计，横屏后页面会自动恢复。</div>
+  </div>
+</div>
 
 <div id="preload-screen" class="fullscreen-container">
   <div class="preload-box">
@@ -368,7 +576,7 @@
 
 <div id="login-screen" class="fullscreen-container hidden">
   <div class="login-box">
-    <div class="login-title">进入智驾乘车体验</div>
+    <div class="login-title">进入机器人驾车游戏</div>
     <div id="login-info" class="login-sub">请输入与前面问卷一致的匿名实验编号。这里不用填写姓名。</div>
     <input id="subject-id-input" class="login-input" type="text" placeholder="实验编号" maxlength="30" autocomplete="off">
     <br>
@@ -379,10 +587,10 @@
 
 <script>
   /* =========================================================
-     实验1b 儿童版候选版 v2｜线下预加载版
+     实验1b 儿童版候选版 v4｜平板横屏优化版
      ---------------------------------------------------------
      核心框架：jsPsych
-     推荐设备：平板浏览器
+     推荐设备：平板横屏浏览器
      风险：2个被试间条件（Low / High）
      正式顺序：沿用成人1b同一套固定伪随机序列
      正式试次：24 = 6场景 × 4助手条件
@@ -891,42 +1099,287 @@
     if(retry){retry.disabled=false;retry.innerText='重新加载失败资源';}
   }
 
-  function avatarHTML(){return `<div class="avatar-box"><img src="${resourceManager.getURL(ROBOT_IMAGE)}" alt="智驾助手头像" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="avatar-fallback">🤖</div></div>`;}
+  function avatarHTML(){return `<div class="avatar-box"><img src="${resourceManager.getURL(ROBOT_IMAGE)}" alt="机器人司机头像" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="avatar-fallback">🤖</div></div>`;}
   function childStateLabel(config){return config.dimension==='Ability'?'开车能力':'关心乘客';}
   function stateColorClass(config){return config.dimension==='Ability'?'ability-text':'emotion-text';}
   function makeEnergyBars(level,dimension){const cls=dimension==='Ability'?'ability':'emotion';return `<div class="energy-bars">${[1,2].map(i=>`<span class="energy-cell ${cls} ${i<=level?'on':''}"></span>`).join('')}</div>`;}
-  function makeAssistantIntroCard(key){const cfg=CONFIGS[key];return `<div class="assistant-intro-card">${avatarHTML()}<div><div class="assistant-intro-title">智驾助手 ${cfg.assistantLabel}</div><div class="state-row"><div class="state-label ${stateColorClass(cfg)}">${childStateLabel(cfg)}</div>${makeEnergyBars(cfg.levelNumeric,cfg.dimension)}</div></div></div>`;}
+  function childLevelNote(cfg){
+    if(cfg.dimension==='Ability') return cfg.levelNumeric===2?'开车很厉害':'开车一般';
+    return cfg.levelNumeric===2?'很会关心乘客':'比较少关心乘客';
+  }
+  function makeAssistantIntroCard(key){
+    const cfg=CONFIGS[key];
+    return `<div class="assistant-intro-card">
+      ${avatarHTML()}
+      <div>
+        <div class="assistant-intro-title">机器人司机 ${cfg.assistantLabel}</div>
+        <div class="state-row">
+          <div class="state-label ${stateColorClass(cfg)}">${childStateLabel(cfg)}</div>
+          ${makeEnergyBars(cfg.levelNumeric,cfg.dimension)}
+        </div>
+        <div class="assistant-level-note">${childLevelNote(cfg)}</div>
+      </div>
+    </div>`;
+  }
   function renderSceneImage(name){const safe=String(name||'').replace(/[^A-Za-z0-9_.-]/g,'');const original=`${IMAGE_ROOT}/${safe}`;const src=resourceManager.getURL(original);return `<div class="scene-image-frame"><div id="scene-load-hint" class="scene-load-hint">正在显示这段道路…</div><img id="scene-image" class="scene-image" data-original-src="${original}" src="${src}" alt="驾驶场景" decoding="async"></div>`;}
-  function renderAssistantInfo(t,isFormal=true){const cfg=t.config;const who=isFormal?`智驾助手 ${t.assistantLabel}`:'练习助手';return `<div class="assistant-info-card"><div class="assistant-badge">${who}</div><div class="assistant-info-main"><div class="assistant-left-stack"><div class="formal-state-row"><div class="formal-state-label ${stateColorClass(cfg)}">${childStateLabel(cfg)}</div>${makeEnergyBars(cfg.levelNumeric,cfg.dimension)}</div>${avatarHTML()}</div><div class="assistant-prompt-wrap"><div><div class="speech-bubble"><span class="prompt-inline-label">助手提示：</span>${t.manipulationText}</div><div id="audio-status" class="audio-status">请先听一听这位助手怎么说</div></div><button id="audio-play-btn" class="audio-btn" type="button" disabled>🔊 听助手说</button></div></div></div>`;}
+  function renderAssistantInfo(t,isFormal=true){
+    const cfg=t.config;
+    const who=isFormal?`机器人司机 ${t.assistantLabel}`:'练习机器人司机';
+    return `<div class="assistant-info-card">
+      <div class="assistant-badge">${who}</div>
+      <div class="assistant-info-main">
+        <div class="assistant-left-stack">
+          <div class="formal-state-row">
+            <div class="formal-state-label ${stateColorClass(cfg)}">${childStateLabel(cfg)}</div>
+            ${makeEnergyBars(cfg.levelNumeric,cfg.dimension)}
+          </div>
+          ${avatarHTML()}
+        </div>
+        <div class="assistant-prompt-wrap">
+          <div style="min-width:0;flex:1;">
+            <div class="speech-bubble"><span class="prompt-inline-label">机器人说：</span>${t.manipulationText}</div>
+            <div id="audio-status" class="audio-status">请先听一听机器人司机怎么说</div>
+          </div>
+          <button id="audio-play-btn" class="audio-btn" type="button" disabled>🔊 听机器人说</button>
+        </div>
+      </div>
+    </div>`;
+  }
 
   function createWelcomeNode(){
-    return {type:jsPsychHtmlKeyboardResponse,choices:'NO_KEYS',stimulus:`<div class="fullscreen-container"><div class="guide-box"><div class="guide-title">今天来体验一次智驾乘车</div><div class="context-box">请你想象一下：现在你坐在一辆<span class="highlight">会自己开车的汽车后排</span>。汽车会经过不同的小路段，每一小段路都可能有一位不同的智驾助手来帮汽车开车。</div><div class="child-tip">前面的平板会告诉你现在的道路是什么样，也会显示这位助手的信息。<b>不用记住前面的助手</b>，每次只要看现在出现的这一位就可以。</div><div>智驾助手有两方面的信息：</div><div style="margin:8px 0 4px;"><span class="ability-text">绿色＝开车能力</span>：帮助汽车看道路、判断情况，把车开好。</div><div style="margin-bottom:12px;"><span class="emotion-text">橙色＝关心乘客</span>：注意坐车人的感受，关心和回应坐车的人。</div><b>接下来我们会：</b><br>① 先分一分10颗升级星星；<br>② 认识几位智驾助手；<br>③ 做两次练习；<br>④ 开始正式的乘车体验。</div><div style="margin-top:18px;"><button id="welcome-next" class="continue-btn">我准备好了</button></div></div>`,data:{Event_Type:'Welcome'},on_load:()=>document.getElementById('welcome-next').addEventListener('click',()=>jsPsych.finishTrial())};
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box" style="width:min(980px,94vw);padding:22px 28px;">
+          <div class="guide-title" style="margin-bottom:13px;">今天来体验一次驾车游戏</div>
+
+          <div class="context-box" style="margin-bottom:12px;">
+            请你想象一下：在游戏中，你坐在一辆<span class="highlight">会自己开车的汽车后排</span>，
+            每经过一小段道路，都会有一位<span class="highlight">机器人司机</span>来帮助汽车开车。
+            前面的平板会告诉你现在经过什么道路。
+          </div>
+
+          <div style="font-weight:900;margin-bottom:5px;">机器人司机有两方面的信息：</div>
+
+          <div class="welcome-visual">
+            <div class="welcome-robot">${avatarHTML()}</div>
+            <div class="feature-stack">
+              <div class="feature-row">
+                <div class="feature-name ability-text">开车能力</div>
+                ${makeEnergyBars(2,'Ability')}
+                <div class="feature-explain">看清道路、判断情况，把汽车开好。</div>
+              </div>
+              <div class="feature-row">
+                <div class="feature-name emotion-text">关心乘客</div>
+                ${makeEnergyBars(2,'Emotion')}
+                <div class="feature-explain">注意乘客的感受，关心和回应坐车的人。</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="child-tip" style="margin:9px 0 11px;">
+            后面会遇到不同的机器人司机。<b>不用记住前面的司机</b>，每一段路只看现在出现的这位就可以。
+          </div>
+
+          <b>接下来我们会：</b><br>
+          ① 完成一个<span class="highlight">小星星任务</span>；<br>
+          ② 认识四位<span class="highlight">机器人司机</span>；<br>
+          ③ 练习两次；<br>
+          ④ 开始正式的驾车游戏。
+        </div>
+        <div style="margin-top:13px;"><button id="welcome-next" class="continue-btn">我准备好了</button></div>
+      </div>`,
+      data:{Event_Type:'Welcome'},
+      on_load:()=>document.getElementById('welcome-next').addEventListener('click',()=>jsPsych.finishTrial())
+    };
   }
 
   function starsHTML(n){return '★'.repeat(n);}
   function createAllocationNode(){
-    return {type:jsPsychHtmlKeyboardResponse,choices:'NO_KEYS',stimulus:`<div class="fullscreen-container"><div class="guide-box"><div class="guide-title">给机器人分升级星星</div><div class="context-box">现在有一位智驾助手，它的两种功能一开始都差不多。你有<span class="highlight">10颗升级星星</span>，可以按照自己的想法分给它的两种功能。</div><div class="child-tip">你更希望哪一种功能变得更好，就可以多给它一些星星。两边都至少留1颗星星，10颗星星都要分完。</div><div class="star-allocation-wrap"><div class="star-card ability"><div class="star-title ability-text">开车能力</div><div class="star-desc">看道路、判断情况，把车开好</div><div id="ability-stars" class="star-display"></div><div id="ability-count" class="star-count"></div><div class="allocation-controls"><button id="ability-minus" class="mini-btn">−</button><button id="ability-plus" class="mini-btn">＋</button></div></div><div class="star-card emotion"><div class="star-title emotion-text">关心乘客</div><div class="star-desc">注意你的感受，关心和回应你</div><div id="emotion-stars" class="star-display"></div><div id="emotion-count" class="star-count"></div><div class="allocation-controls"><button id="emotion-minus" class="mini-btn">−</button><button id="emotion-plus" class="mini-btn">＋</button></div></div></div><div style="text-align:center;"><button id="allocation-submit" class="action-btn">这样分就可以</button></div></div></div>`,data:{Event_Type:'Baseline_Allocation'},on_load:function(){
-      let a=5,e=5;const am=document.getElementById('ability-minus'),ap=document.getElementById('ability-plus'),em=document.getElementById('emotion-minus'),ep=document.getElementById('emotion-plus');
-      function render(){document.getElementById('ability-stars').innerText=starsHTML(a);document.getElementById('emotion-stars').innerText=starsHTML(e);document.getElementById('ability-count').innerText=`${a}颗星星`;document.getElementById('emotion-count').innerText=`${e}颗星星`;am.disabled=a<=1;ap.disabled=a>=9;em.disabled=e<=1;ep.disabled=e>=9;}
-      am.addEventListener('click',()=>{if(a>1&&e<9){a--;e++;render();}});ap.addEventListener('click',()=>{if(a<9&&e>1){a++;e--;render();}});em.addEventListener('click',()=>{if(e>1&&a<9){e--;a++;render();}});ep.addEventListener('click',()=>{if(e<9&&a>1){e++;a--;render();}});render();
-      document.getElementById('allocation-submit').addEventListener('click',()=>{baselineAbility=a;baselineEmotion=e;jsPsych.finishTrial({Event_Type:'Baseline_Allocation',Baseline_Ability_Points:a,Baseline_Emotion_Points:e});});
-    }};
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box" style="width:min(980px,94vw);padding:21px 28px;">
+          <div class="guide-title" style="margin-bottom:12px;">小星星任务</div>
+
+          <div class="allocation-robot-panel">
+            ${avatarHTML()}
+            <div class="allocation-robot-text">
+              这位机器人司机有<span class="ability-text">开车能力</span>和<span class="emotion-text">关心乘客</span>两种功能。
+              现在你有<span class="highlight">10颗升级星星</span>。你希望哪一种功能变得更好，就可以多给它一些星星。
+            </div>
+          </div>
+
+          <div class="child-tip" style="text-align:center;margin:8px 0 10px;">
+            点击“＋”或“−”移动星星。两边都至少留下1颗，<b>10颗星星会一直全部分完</b>。
+          </div>
+
+          <div class="star-allocation-wrap" style="margin:12px 0 10px;">
+            <div class="star-card ability">
+              <div class="star-title ability-text">开车能力</div>
+              <div class="mini-feature">
+                ${makeEnergyBars(2,'Ability')}
+                <div class="star-desc">看道路、判断情况，把车开好</div>
+              </div>
+              <div id="ability-stars" class="star-display"></div>
+              <div id="ability-count" class="star-count"></div>
+              <div class="allocation-controls">
+                <button id="ability-minus" class="mini-btn">−</button>
+                <button id="ability-plus" class="mini-btn">＋</button>
+              </div>
+            </div>
+
+            <div class="star-card emotion">
+              <div class="star-title emotion-text">关心乘客</div>
+              <div class="mini-feature">
+                ${makeEnergyBars(2,'Emotion')}
+                <div class="star-desc">注意你的感受，关心和回应你</div>
+              </div>
+              <div id="emotion-stars" class="star-display"></div>
+              <div id="emotion-count" class="star-count"></div>
+              <div class="allocation-controls">
+                <button id="emotion-minus" class="mini-btn">−</button>
+                <button id="emotion-plus" class="mini-btn">＋</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="text-align:center;"><button id="allocation-submit" class="action-btn">这样分就可以</button></div>
+        </div>
+      </div>`,
+      data:{Event_Type:'Baseline_Allocation'},
+      on_load:function(){
+        let a=5,e=5;
+        const am=document.getElementById('ability-minus'),ap=document.getElementById('ability-plus'),
+              em=document.getElementById('emotion-minus'),ep=document.getElementById('emotion-plus');
+
+        function render(){
+          document.getElementById('ability-stars').innerText=starsHTML(a);
+          document.getElementById('emotion-stars').innerText=starsHTML(e);
+          document.getElementById('ability-count').innerText=`${a}颗星星`;
+          document.getElementById('emotion-count').innerText=`${e}颗星星`;
+          am.disabled=a<=1;ap.disabled=a>=9;em.disabled=e<=1;ep.disabled=e>=9;
+        }
+        am.addEventListener('click',()=>{if(a>1&&e<9){a--;e++;render();}});
+        ap.addEventListener('click',()=>{if(a<9&&e>1){a++;e--;render();}});
+        em.addEventListener('click',()=>{if(e>1&&a<9){e--;a++;render();}});
+        ep.addEventListener('click',()=>{if(e<9&&a>1){e++;a--;render();}});
+        render();
+
+        document.getElementById('allocation-submit').addEventListener('click',()=>{
+          baselineAbility=a;baselineEmotion=e;
+          jsPsych.finishTrial({
+            Event_Type:'Baseline_Allocation',
+            Baseline_Ability_Points:a,
+            Baseline_Emotion_Points:e
+          });
+        });
+      }
+    };
   }
 
   function createAssistantIntroNode(){
-    return {type:jsPsychHtmlKeyboardResponse,choices:'NO_KEYS',stimulus:`<div class="fullscreen-container" style="justify-content:flex-start;"><div class="guide-title" style="margin-bottom:9px;">认识智驾助手</div><div class="guide-box" style="width:min(980px,94vw);padding:14px 18px;margin-bottom:10px;font-size:17px;"><span class="ability-text">绿色</span>表示这位助手的<b>开车能力</b>，<span class="emotion-text">橙色</span>表示它<b>关心乘客</b>这一方面。亮起来的格子越多，表示这一方面的状态越强。正式体验里每次都会重新显示，不用把它们背下来。</div><div class="assistant-intro-grid">${makeAssistantIntroCard('HighAbility')}${makeAssistantIntroCard('LowAbility')}${makeAssistantIntroCard('HighEmotion')}${makeAssistantIntroCard('LowEmotion')}</div><div style="margin:13px 0 8px;"><button id="assistant-next" class="continue-btn">我知道怎么看了</button></div></div>`,data:{Event_Type:'Assistant_Introduction'},on_load:()=>document.getElementById('assistant-next').addEventListener('click',()=>jsPsych.finishTrial())};
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container" style="justify-content:flex-start;padding-top:13px;">
+        <div class="guide-title" style="margin-bottom:8px;">认识四位机器人司机</div>
+        <div class="guide-box" style="width:min(1040px,94vw);padding:11px 18px;margin-bottom:9px;font-size:16px;line-height:1.55;">
+          <span class="ability-text">绿色</span>告诉你机器人司机的<b>开车能力</b>，
+          <span class="emotion-text">橙色</span>告诉你它<b>关心乘客</b>这一方面。
+          看一看亮了几格，再看看下面的小提示就可以。
+        </div>
+        <div class="assistant-intro-grid">
+          ${makeAssistantIntroCard('HighAbility')}
+          ${makeAssistantIntroCard('LowAbility')}
+          ${makeAssistantIntroCard('HighEmotion')}
+          ${makeAssistantIntroCard('LowEmotion')}
+        </div>
+        <div style="margin:11px 0 6px;"><button id="assistant-next" class="continue-btn">我认识他们了</button></div>
+      </div>`,
+      data:{Event_Type:'Assistant_Introduction'},
+      on_load:()=>document.getElementById('assistant-next').addEventListener('click',()=>jsPsych.finishTrial())
+    };
   }
 
   function createPracticeInstructionNode(){
-    return {type:jsPsychHtmlKeyboardResponse,choices:'NO_KEYS',stimulus:`<div class="fullscreen-container"><div class="guide-box"><div class="guide-title">先练习两次</div><div class="context-box">每一次先看看道路，再看看现在的智驾助手。看到<span class="highlight">🔊 听助手说</span>以后，点一下小喇叭，认真听完这位助手说的话。</div><div class="child-tip">听完以后，下面会出现两道问题。五个圆圈表示从“很少”到“很多”：<br><div style="text-align:center;font-size:27px;letter-spacing:9px;margin-top:7px;">○ ◔ ◑ ◕ ●</div><div style="text-align:center;color:var(--muted);font-size:13px;">越往右，表示“越相信 / 越愿意”</div></div><div>练习没有对错，只是帮你学会怎么操作。如果没有听清楚，可以点<span class="highlight">“再听一次”</span>。</div></div><div style="margin-top:18px;"><button id="practice-start" class="continue-btn">开始练习</button></div></div>`,data:{Event_Type:'Practice_Instruction'},on_load:()=>document.getElementById('practice-start').addEventListener('click',()=>jsPsych.finishTrial())};
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box" style="width:min(900px,92vw);padding:21px 28px;">
+          <div class="guide-title" style="margin-bottom:12px;">先练习两次</div>
+          <div class="context-box" style="margin-bottom:10px;">
+            每一次先看清楚道路，再看看现在的<span class="highlight">机器人司机</span>。
+            然后点一下<span class="highlight">🔊 听机器人说</span>，认真听完它说的话。
+          </div>
+
+          <div class="child-tip" style="margin:9px 0;">
+            听完以后，会回答两道小问题。五个圆圈表示程度从少到多：
+            <div class="scale-demo">
+              <div class="scale-demo-circles">
+                ${[0,25,50,75,100].map(f=>`<div class="scale-demo-item"><span class="circle-scale" style="--fill:${f}%"></span></div>`).join('')}
+              </div>
+              <div class="scale-demo-labels">
+                <span>一点也不</span><span>非常</span>
+              </div>
+            </div>
+            <div style="text-align:center;color:#e5ebf1;font-size:14px;">圆圈越满，表示你的想法越多、越接近右边。</div>
+          </div>
+
+          <div style="font-size:16px;line-height:1.6;">
+            练习没有对错。如果没有听清楚，可以点<span class="highlight">“再听一次”</span>。
+          </div>
+        </div>
+        <div style="margin-top:13px;"><button id="practice-start" class="continue-btn">开始练习</button></div>
+      </div>`,
+      data:{Event_Type:'Practice_Instruction'},
+      on_load:()=>document.getElementById('practice-start').addEventListener('click',()=>jsPsych.finishTrial())
+    };
   }
 
   function createFormalInstructionNode(){
-    return {type:jsPsychHtmlKeyboardResponse,choices:'NO_KEYS',stimulus:`<div class="fullscreen-container"><div class="guide-box"><div class="guide-title">正式乘车体验要开始啦</div><div class="context-box">请继续想象你坐在会自己开车的汽车后排。接下来会出现一段一段新的道路，每次只要看<span class="highlight">现在这段道路</span>和<span class="highlight">现在这位助手</span>就可以。</div><div class="child-tip">这些都是平板上的模拟乘车场景，你现在不会真的遇到危险。每位智驾助手都能完成基本的驾驶任务，但它们在不同方面的表现可能不一样。</div><div>每一段路这样做：</div><div style="margin-top:7px;line-height:1.8;">① 先看看现在的道路；<br>② 看一看助手的绿色或橙色状态；<br>③ 点小喇叭，听完<span class="highlight">助手提示</span>；<br>④ 按照你自己的感觉回答两道问题。<br>⑤ 有些道路以后还会再出现，但助手可能不一样，请每次都重新看、重新听。</div><div style="margin-top:10px;color:var(--muted);font-size:14px;">这里没有正确答案，告诉我们你自己的感觉就可以。</div></div><div style="margin-top:18px;"><button id="formal-start" class="continue-btn">开始正式体验</button></div></div>`,data:{Event_Type:'Formal_Instruction'},on_load:function(){document.getElementById('formal-start').addEventListener('click',()=>{if(formalStartedAtMs===null)formalStartedAtMs=Date.now();jsPsych.finishTrial();});}};
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="fullscreen-container">
+        <div class="guide-box" style="width:min(900px,92vw);padding:21px 28px;">
+          <div class="guide-title" style="margin-bottom:12px;">正式驾车游戏要开始啦</div>
+          <div class="context-box" style="margin-bottom:10px;">
+            请继续想象你坐在汽车后排。接下来会经过一段一段不同的道路，
+            每一次都有一位<span class="highlight">机器人司机</span>来帮助汽车开车。
+          </div>
+          <div class="child-tip" style="margin:8px 0;">
+            这些都是平板里的模拟道路，你现在不会真的遇到危险。
+            每位机器人司机都能完成基本的驾驶任务，只是它们的表现可能不一样。
+          </div>
+          <div style="font-size:16px;line-height:1.65;">
+            ① 先看看现在的道路；<br>
+            ② 看看机器人司机的绿色或橙色信息；<br>
+            ③ 点小喇叭，把机器人说的话听完；<br>
+            ④ 按照自己的感觉回答两道问题。<br>
+            ⑤ 有些道路还会再出现，但机器人司机可能不同，每次都重新看、重新听。
+          </div>
+          <div style="margin-top:8px;color:var(--muted);font-size:14px;text-align:center;">
+            没有正确答案，说出你自己的想法就可以。
+          </div>
+        </div>
+        <div style="margin-top:13px;"><button id="formal-start" class="continue-btn">开始正式游戏</button></div>
+      </div>`,
+      data:{Event_Type:'Formal_Instruction'},
+      on_load:function(){
+        document.getElementById('formal-start').addEventListener('click',()=>{
+          if(formalStartedAtMs===null)formalStartedAtMs=Date.now();
+          jsPsych.finishTrial();
+        });
+      }
+    };
   }
 
   function createRestNode(){
-    return {type:jsPsychHtmlKeyboardResponse,choices:'NO_KEYS',stimulus:`<div class="fullscreen-container"><div class="guide-box" style="text-align:center;"><div class="guide-title" style="color:var(--green);">已经完成一半啦</div><div class="context-box" style="text-align:center;">你可以休息一下，看看远处、活动一下。准备好了以后，我们再继续后面的道路。</div></div><div style="margin-top:18px;"><button id="rest-continue" class="continue-btn">我准备好了，继续</button></div></div>`,data:{Event_Type:'Rest_Break'},on_load:()=>document.getElementById('rest-continue').addEventListener('click',()=>jsPsych.finishTrial())};
+    return {type:jsPsychHtmlKeyboardResponse,choices:'NO_KEYS',stimulus:`<div class="fullscreen-container"><div class="guide-box" style="text-align:center;"><div class="guide-title" style="color:var(--green);">已经完成一半啦</div><div class="context-box" style="text-align:center;">你可以休息一下，看看远处、活动一下。准备好了以后，我们再继续后面的驾车游戏。</div></div><div style="margin-top:18px;"><button id="rest-continue" class="continue-btn">我准备好了，继续</button></div></div>`,data:{Event_Type:'Rest_Break'},on_load:()=>document.getElementById('rest-continue').addEventListener('click',()=>jsPsych.finishTrial())};
   }
 
   function ratingButtonsHTML(){
@@ -935,8 +1388,8 @@
   }
 
   function createRatingTrialNode(trialData,isFormal=true){
-    const q1='我觉得这个智驾助手可以相信。';
-    const q2='在现在这条路上，我愿意让这个智驾助手继续帮助汽车开下去。';
+    const q1='我觉得这个机器人司机可以相信。';
+    const q2='我愿意让这个机器人司机继续开车。';
     return {type:jsPsychHtmlKeyboardResponse,choices:'NO_KEYS',stimulus:`<div class="trial-shell"><div class="trial-header"><span>${isFormal?`正式体验 ${trialData.formalOrder} / 24`:trialData.practiceLabel}</span><span>${isFormal?'每一段路都重新判断':'练习不计入结果'}</span></div><div class="scene-zone">${renderSceneImage(trialData.image)}<div class="scene-cue">场景提示：${trialData.sceneCue||'先看看现在的道路。'}</div></div><div class="assistant-zone">${renderAssistantInfo(trialData,isFormal)}</div><div class="rating-zone"><div class="rating-topline"><div id="rating-progress" class="rating-progress">第 1 题 / 共 2 题</div><button id="rating-back" class="rating-back hidden-visibility" type="button">返回上一题</button></div><div id="rating-question" class="rating-question">${q1}</div><div class="rating-options">${ratingButtonsHTML()}</div><div id="rating-anchors" class="rating-anchors"><span>一点也不相信</span><span>非常相信</span></div><div class="rating-help">圆圈越满，表示你的想法越接近右边</div><button id="rating-confirm" class="rating-confirm" disabled>选好了，继续</button></div></div>`,on_load:function(){
       let totalStart=null,phase=1,phaseStart=null;let trustDraft=null,coopDraft=null,trustScore=null,coopScore=null,trustRT=0,coopRT=0,backToQ1Count=0;
       let audioFirstPlayRT=null,audioPlayCount=0,audioCompleted=0,audioTotalPlayTime=0,audioPlayStartedAt=null;
@@ -963,9 +1416,9 @@
       audioBtn.addEventListener('click',async()=>{
         if(!sceneReady)return;
         if(audioFirstPlayRT===null) audioFirstPlayRT=Date.now()-totalStart;
-        audioPlayCount++;audioBtn.disabled=true;audioBtn.classList.add('playing');audioBtn.innerText='正在播放…';audioStatus.innerText='请认真听完这位助手说的话';
+        audioPlayCount++;audioBtn.disabled=true;audioBtn.classList.add('playing');audioBtn.innerText='正在播放…';audioStatus.innerText='请认真听完这位机器人司机说的话';
         try{audio.pause();audio.currentTime=0;audioPlayStartedAt=Date.now();await audio.play();}
-        catch(e){audioPlayStartedAt=null;audioBtn.disabled=false;audioBtn.classList.remove('playing');audioBtn.innerText=audioCompleted?'🔊 再听一次':'🔊 听助手说';audioStatus.innerText='没有播放成功，请再点一次';}
+        catch(e){audioPlayStartedAt=null;audioBtn.disabled=false;audioBtn.classList.remove('playing');audioBtn.innerText=audioCompleted?'🔊 再听一次':'🔊 听机器人说';audioStatus.innerText='没有播放成功，请再点一次';}
       });
 
       function enableAfterImage(){
@@ -1054,7 +1507,7 @@
       console.warn('儿童版测试模式：使用编号回退风险条件',dataPipeCondition);
     }
     riskGroup=dataPipeCondition===0?'Low':'High';
-    currentVersion=`Exp1b_Child_DP${dataPipeCondition}_${riskGroup}_${SEQUENCE_NAME}`;
+    currentVersion=`Exp1b_Child_v4_DP${dataPipeCondition}_${riskGroup}_${SEQUENCE_NAME}`;
     jsPsych.data.addProperties({Subject_ID:currentSubjectId,Session_UUID:sessionUUID,Age_Group:AGE_GROUP,DataPipe_Condition:dataPipeCondition,Version:currentVersion,Sequence:SEQUENCE_NAME,Rating_Format:RATING_FORMAT,Risk_Level:riskGroup,Browser_Context:getBrowserContext(),User_Agent:navigator.userAgent||'',Image_Format:IMAGE_FORMAT});
     experimentStartedAtMs=Date.now();document.getElementById('login-screen').classList.add('hidden');document.getElementById('jspsych-target').innerHTML='';
 
