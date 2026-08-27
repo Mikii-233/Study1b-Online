@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-  <title>实验1b｜机器人驾车游戏（儿童版 v7）</title>
+  <title>实验1b｜机器人驾车游戏（儿童版 v9）</title>
 
   <!-- 与成人1b / 实验3a保持相同的本地 jsPsych 目录结构 -->
   <script src="../jspsych/jspsych.js"></script>
@@ -978,7 +978,7 @@
 
 <script>
   /* =========================================================
-     实验1b 儿童版候选版 v7｜iPad Air 4 横屏结构 + UTF-8 BOM 修正版
+     实验1b 儿童版候选版 v9｜精简数据导出 + 无限语音重复 + UTF-8 BOM
      ---------------------------------------------------------
      核心框架：jsPsych
      推荐设备：平板横屏浏览器
@@ -1055,15 +1055,38 @@
   }
 
   const CLEAN_CSV_COLUMNS=[
-    'Subject_ID','Session_UUID','Age_Group','DataPipe_Condition','Version','Sequence','Rating_Format',
-    'Formal_Trial_Order','Block','Block_Position',
-    'Image_Number','Image_ID','Image_File','Scene_ID','Scene_Name','Scene_Cue','Risk_Level',
-    'Assistant_Label','Config_Code','Config_Type','Config_Name_CN',
-    'Attribute_Dimension','Attribute_Level','Attribute_Level_Numeric','Manipulation_Text','Audio_File',
-    'Audio_First_Play_RT_ms','Audio_Play_Count','Audio_Replay_Count','Audio_Completed','Audio_Total_Play_Time_ms',
-    'Trust_Score','Trust_RT_ms','Cooperation_Score','Cooperation_RT_ms','Back_to_Q1_Count','Total_Trial_Time_ms',
-    'Experiment_Total_Time_ms','Formal_Total_Time_ms','Page_Hidden_Count','Page_Hidden_Total_ms',
-    'Baseline_Ability_Points','Baseline_Emotion_Points','Browser_Context','User_Agent','Image_Format'
+    // ---------- 被试/版本 ----------
+    'Subject_ID',
+    'Session_UUID',
+    'Version',
+
+    // ---------- trial ----------
+    'Formal_Trial_Order',
+    'Scene_ID',
+    'Scene_Name',
+    'Risk_Level',
+
+    // ---------- 机器人操纵 ----------
+    'Config_Code',
+    'Attribute_Dimension',
+    'Attribute_Level',
+
+    // ---------- 语音 ----------
+    // 成功启动播放的总次数；包含首次播放以及所有重复播放。
+    'Audio_Play_Count',
+
+    // ---------- 主要因变量与反应时 ----------
+    'Trust_Score',
+    'Trust_RT_ms',
+    'Cooperation_Score',
+    'Cooperation_RT_ms',
+    'Total_Trial_Time_ms',
+
+    // ---------- 被试层面 ----------
+    'Baseline_Ability_Points',
+    'Baseline_Emotion_Points',
+    'Formal_Total_Time_ms',
+    'Page_Hidden_Count'
   ];
   function csvEscape(value){
     if(value===null||value===undefined) return '';
@@ -1781,76 +1804,302 @@
     return fills.map((f,i)=>`<button class="rating-option" data-score="${i+1}" disabled aria-label="程度${i+1}"><span class="circle-scale" style="--fill:${f}%"></span></button>`).join('');
   }
 
+  // =========================================================
+  // v8 音频生命周期：
+  // 1) 每个驾驶 trial 只持有自己的一个 Audio 对象；
+  // 2) 同一 trial 内可无限次点击“重复播放”，不设置次数上限；
+  // 3) 切换到下一驾驶 trial 时，上一 trial 若仍在播放会立即停止；
+  // 4) 信任题 -> 合作题仍属于同一个 trial，因此不会中断音频。
+  // =========================================================
+  let activeTrialAudioStopper=null;
+
+  function stopAnyActiveTrialAudio(){
+    if(typeof activeTrialAudioStopper==='function'){
+      try{activeTrialAudioStopper(false);}catch(e){console.warn('停止上一trial语音时出现提示：',e);}
+    }
+    activeTrialAudioStopper=null;
+  }
+
   function createRatingTrialNode(trialData,isFormal=true){
     const q1='我觉得这个机器人司机可以相信。';
     const q2='我愿意让这个机器人司机继续开车。';
-    return {type:jsPsychHtmlKeyboardResponse,choices:'NO_KEYS',stimulus:`<div class="trial-shell ${isFormal?'formal-trial':'practice-trial'}"><div class="trial-header"><span>${isFormal?`正式体验 ${trialData.formalOrder} / 24`:trialData.practiceLabel}</span><span>${isFormal?'每一段路都重新判断':'练习不计入结果'}</span></div><div class="scene-zone">${renderSceneImage(trialData.image)}<div class="scene-cue">场景提示：${trialData.sceneCue||'先看看现在的道路。'}</div></div><div class="assistant-zone">${renderAssistantInfo(trialData,isFormal)}</div><div class="rating-zone"><div class="rating-topline"><div id="rating-progress" class="rating-progress">第 1 题 / 共 2 题</div><button id="rating-back" class="rating-back hidden-visibility" type="button">返回上一题</button></div><div id="rating-question" class="rating-question">${q1}</div><div class="rating-options">${ratingButtonsHTML()}</div><div id="rating-anchors" class="rating-anchors"><span>一点也不相信</span><span>非常相信</span></div><div class="rating-help">圆圈越满，表示你的想法越接近右边</div><button id="rating-confirm" class="rating-confirm" disabled>选好了，继续</button></div></div>`,on_load:function(){
-      let totalStart=null,phase=1,phaseStart=null;let trustDraft=null,coopDraft=null,trustScore=null,coopScore=null,trustRT=0,coopRT=0,backToQ1Count=0;
-      let audioFirstPlayRT=null,audioPlayCount=0,audioCompleted=0,audioTotalPlayTime=0,audioPlayStartedAt=null;
 
-      const options=Array.from(document.querySelectorAll('.rating-option'));
-      const confirm=document.getElementById('rating-confirm'),back=document.getElementById('rating-back'),q=document.getElementById('rating-question'),progress=document.getElementById('rating-progress'),anchors=document.getElementById('rating-anchors');
-      const audioBtn=document.getElementById('audio-play-btn'),audioStatus=document.getElementById('audio-status');
-      const sceneImg=document.getElementById('scene-image'),sceneHint=document.getElementById('scene-load-hint');
-      const imagePath=sceneImg?sceneImg.dataset.originalSrc:`${IMAGE_ROOT}/${trialData.image}`;
-      const audioPath=trialData.audioFile;
-      const audio=new Audio(resourceManager.getURL(audioPath));audio.preload='auto';
-      let sceneReady=false;
+    return {
+      type:jsPsychHtmlKeyboardResponse,
+      choices:'NO_KEYS',
+      stimulus:`<div class="trial-shell ${isFormal?'formal-trial':'practice-trial'}"><div class="trial-header"><span>${isFormal?`正式体验 ${trialData.formalOrder} / 24`:trialData.practiceLabel}</span><span>${isFormal?'每一段路都重新判断':'练习不计入结果'}</span></div><div class="scene-zone">${renderSceneImage(trialData.image)}<div class="scene-cue">场景提示：${trialData.sceneCue||'先看看现在的道路。'}</div></div><div class="assistant-zone">${renderAssistantInfo(trialData,isFormal)}</div><div class="rating-zone"><div class="rating-topline"><div id="rating-progress" class="rating-progress">第 1 题 / 共 2 题</div><button id="rating-back" class="rating-back hidden-visibility" type="button">返回上一题</button></div><div id="rating-question" class="rating-question">${q1}</div><div class="rating-options">${ratingButtonsHTML()}</div><div id="rating-anchors" class="rating-anchors"><span>一点也不相信</span><span>非常相信</span></div><div class="rating-help">圆圈越满，表示你的想法越接近右边</div><button id="rating-confirm" class="rating-confirm" disabled>选好了，继续</button></div></div>`,
 
-      function setSelected(score){options.forEach(btn=>btn.classList.toggle('selected',Number(btn.dataset.score)===score));confirm.disabled=score===null;}
-      function unlockRatingsAfterAudio(){
-        if(!audioCompleted){audioCompleted=1;phaseStart=Date.now();options.forEach(btn=>btn.disabled=false);audioStatus.innerText='听完啦，可以回答下面的问题';audioBtn.innerText='🔊 再听一次';}
-      }
+      on_load:function(){
+        // 双保险：新驾驶 trial 出现时，强制停止任何残留的上一 trial 音频。
+        stopAnyActiveTrialAudio();
 
-      audio.addEventListener('ended',()=>{
-        if(audioPlayStartedAt!==null){audioTotalPlayTime+=Math.max(0,Date.now()-audioPlayStartedAt);audioPlayStartedAt=null;}
-        audioBtn.disabled=false;audioBtn.classList.remove('playing');unlockRatingsAfterAudio();
-      });
-      audio.addEventListener('error',()=>{audioBtn.disabled=false;audioBtn.classList.remove('playing');audioStatus.innerText='语音暂时没有加载好，请再点一次小喇叭';audioStatus.style.color='var(--warning)';});
-      audioBtn.addEventListener('click',async()=>{
-        if(!sceneReady)return;
-        if(audioFirstPlayRT===null) audioFirstPlayRT=Date.now()-totalStart;
-        audioPlayCount++;audioBtn.disabled=true;audioBtn.classList.add('playing');audioBtn.innerText='正在播放…';audioStatus.innerText='请认真听完这位机器人司机说的话';
-        try{audio.pause();audio.currentTime=0;audioPlayStartedAt=Date.now();await audio.play();}
-        catch(e){audioPlayStartedAt=null;audioBtn.disabled=false;audioBtn.classList.remove('playing');audioBtn.innerText=audioCompleted?'🔊 再听一次':'🔊 听机器人说';audioStatus.innerText='没有播放成功，请再点一次';}
-      });
+        let totalStart=null,phase=1,phaseStart=null;
+        let trustDraft=null,coopDraft=null,trustScore=null,coopScore=null;
+        let trustRT=0,coopRT=0,backToQ1Count=0;
 
-      function enableAfterImage(){
-        if(sceneReady)return;sceneReady=true;totalStart=Date.now();if(sceneHint)sceneHint.style.display='none';audioBtn.disabled=false;
-      }
-      function attachImage(){
-        if(!sceneImg||sceneReady)return;
-        sceneImg.addEventListener('load',enableAfterImage,{once:true});
-        sceneImg.addEventListener('error',()=>{
-          if(sceneHint){sceneHint.style.display='flex';sceneHint.style.color='var(--warning)';sceneHint.innerText='道路图片显示失败，请研究者刷新页面并重新完成资源准备。';}
-          audioBtn.disabled=true;
-          console.error('Preloaded image display failed:',imagePath);
-        },{once:true});
-        if(sceneImg.complete&&sceneImg.naturalWidth>0) enableAfterImage();
-      }
-      attachImage();
+        let audioFirstPlayRT=null;
+        let audioPlayCount=0;              // 成功开始播放的次数
+        let audioFullPlayCount=0;          // 完整播放到 ended 的次数
+        let audioCompleted=0;              // 至少完整听完1次：0/1
+        let audioInterruptedOnTrialEnd=0;  // 离开trial时是否截断了一次正在播放的重复语音
+        let audioTotalPlayTime=0;          // 完整播放 + 最后被截断部分的累计实际收听时间
+        let audioPlayStartedAt=null;
+        let audioIsPlaying=false;
 
-      options.forEach(btn=>btn.addEventListener('click',()=>{const score=Number(btn.dataset.score);if(phase===1)trustDraft=score;else coopDraft=score;setSelected(score);}));
-      back.addEventListener('click',()=>{if(phase!==2)return;coopDraft=null;backToQ1Count++;phase=1;q.innerText=q1;progress.innerText='第 1 题 / 共 2 题';anchors.innerHTML='<span>一点也不相信</span><span>非常相信</span>';back.classList.add('hidden-visibility');phaseStart=Date.now();setSelected(trustDraft);});
-      confirm.addEventListener('click',()=>{
-        if(phase===1){
-          if(trustDraft===null)return;trustScore=trustDraft;trustRT=Date.now()-phaseStart;phase=2;q.innerText=q2;progress.innerText='第 2 题 / 共 2 题';anchors.innerHTML='<span>一点也不愿意</span><span>非常愿意</span>';back.classList.remove('hidden-visibility');phaseStart=Date.now();setSelected(coopDraft);
-        }else{
-          if(coopDraft===null)return;coopScore=coopDraft;coopRT=Date.now()-phaseStart;
-          const imageBase=String(trialData.image||'').replace(/\.[^.]+$/,'');const imageNumber=(String(trialData.image||'').match(/(\d+)/)||[])[1]||'';
-          jsPsych.finishTrial({
-            Event_Type:isFormal?'Formal_Trial':'Practice_Trial',Subject_ID:currentSubjectId,Session_UUID:sessionUUID,Age_Group:AGE_GROUP,DataPipe_Condition:dataPipeCondition,Version:currentVersion,Sequence:SEQUENCE_NAME,Rating_Format:RATING_FORMAT,
-            Formal_Trial_Order:isFormal?trialData.formalOrder:0,Block:isFormal?trialData.block:0,Block_Position:isFormal?trialData.blockPosition:0,
-            Image_Number:imageNumber,Image_ID:imageBase,Image_File:trialData.image,Scene_ID:trialData.sceneId,Scene_Name:trialData.sceneName,Scene_Cue:trialData.sceneCue||'',Risk_Level:isFormal?trialData.risk:'Practice',
-            Assistant_Label:isFormal?trialData.assistantLabel:'Practice',Config_Code:trialData.config.code,Config_Type:trialData.config.key,Config_Name_CN:trialData.config.internalName,Attribute_Dimension:trialData.config.dimension,Attribute_Level:trialData.config.level,Attribute_Level_Numeric:trialData.config.levelNumeric,
-            Manipulation_Text:trialData.manipulationText,Audio_File:audioPath,Audio_First_Play_RT_ms:audioFirstPlayRT,Audio_Play_Count:audioPlayCount,Audio_Replay_Count:Math.max(0,audioPlayCount-1),Audio_Completed:audioCompleted,Audio_Total_Play_Time_ms:audioTotalPlayTime,
-            Trust_Score:trustScore,Trust_RT_ms:trustRT,Cooperation_Score:coopScore,Cooperation_RT_ms:coopRT,Back_to_Q1_Count:backToQ1Count,Total_Trial_Time_ms:totalStart===null?null:Date.now()-totalStart,
-            Baseline_Ability_Points:baselineAbility,Baseline_Emotion_Points:baselineEmotion,Browser_Context:getBrowserContext(),User_Agent:navigator.userAgent||'',Image_Format:IMAGE_FORMAT
-          });
+        const options=Array.from(document.querySelectorAll('.rating-option'));
+        const confirm=document.getElementById('rating-confirm');
+        const back=document.getElementById('rating-back');
+        const q=document.getElementById('rating-question');
+        const progress=document.getElementById('rating-progress');
+        const anchors=document.getElementById('rating-anchors');
+        const audioBtn=document.getElementById('audio-play-btn');
+        const audioStatus=document.getElementById('audio-status');
+        const sceneImg=document.getElementById('scene-image');
+        const sceneHint=document.getElementById('scene-load-hint');
+
+        const imagePath=sceneImg?sceneImg.dataset.originalSrc:`${IMAGE_ROOT}/${trialData.image}`;
+        const audioPath=trialData.audioFile;
+
+        // 每个 trial 只建立这一个 Audio 对象；每次“再听一次”都把同一个对象从0秒重新播放。
+        const audio=new Audio(resourceManager.getURL(audioPath));
+        audio.preload='auto';
+        let sceneReady=false;
+
+        function setSelected(score){
+          options.forEach(btn=>btn.classList.toggle('selected',Number(btn.dataset.score)===score));
+          confirm.disabled=score===null;
         }
-      });
-    }};
+
+        function closeCurrentAudioSegment(){
+          if(audioPlayStartedAt!==null){
+            audioTotalPlayTime+=Math.max(0,Date.now()-audioPlayStartedAt);
+            audioPlayStartedAt=null;
+          }
+        }
+
+        function setAudioIdleUI(){
+          if(!audioBtn)return;
+          audioBtn.disabled=!sceneReady;
+          audioBtn.classList.remove('playing');
+          audioBtn.innerText=audioCompleted?'🔊 重复播放':'🔊 听机器人说';
+        }
+
+        function unlockRatingsAfterFirstFullPlay(){
+          if(audioCompleted)return;
+          audioCompleted=1;
+          phaseStart=Date.now();
+          options.forEach(btn=>btn.disabled=false);
+          audioStatus.innerText='听完啦，可以回答下面的问题；需要时可以一直点击“重复播放”';
+        }
+
+        function stopThisTrialAudio(markAsTrialEnd=false){
+          const wasActuallyPlaying=audioIsPlaying || (!audio.paused && !audio.ended);
+
+          if(wasActuallyPlaying){
+            closeCurrentAudioSegment();
+            if(markAsTrialEnd) audioInterruptedOnTrialEnd=1;
+          }
+
+          try{audio.pause();}catch(_){}
+          try{audio.currentTime=0;}catch(_){}
+
+          audioIsPlaying=false;
+
+          if(activeTrialAudioStopper===stopThisTrialAudio){
+            activeTrialAudioStopper=null;
+          }
+        }
+
+        // 注册为当前驾驶 trial 的唯一音频。
+        activeTrialAudioStopper=stopThisTrialAudio;
+
+        audio.addEventListener('ended',()=>{
+          closeCurrentAudioSegment();
+          audioIsPlaying=false;
+          audioFullPlayCount++;
+          unlockRatingsAfterFirstFullPlay();
+          setAudioIdleUI();
+        });
+
+        audio.addEventListener('error',()=>{
+          closeCurrentAudioSegment();
+          audioIsPlaying=false;
+          setAudioIdleUI();
+          audioStatus.innerText='语音暂时没有播放成功，请再点一次小喇叭';
+          audioStatus.style.color='var(--warning)';
+        });
+
+        audioBtn.addEventListener('click',async()=>{
+          if(!sceneReady || audioIsPlaying)return;
+
+          audioBtn.disabled=true;
+          audioBtn.classList.add('playing');
+          audioBtn.innerText='正在播放…';
+          audioStatus.style.color='';
+          audioStatus.innerText='请认真听完这位机器人司机说的话';
+
+          const requestedAt=Date.now();
+
+          try{
+            // 无论是第一次还是第N次，都固定从本trial这一条语音的0秒开始。
+            try{audio.pause();}catch(_){}
+            try{audio.currentTime=0;}catch(_){}
+
+            audioPlayStartedAt=requestedAt;
+            audioIsPlaying=true;
+
+            await audio.play();
+
+            // 只把“真正成功开始播放”的次数记入数据。
+            audioPlayCount++;
+            if(audioFirstPlayRT===null){
+              audioFirstPlayRT=requestedAt-totalStart;
+            }
+          }catch(e){
+            closeCurrentAudioSegment();
+            audioIsPlaying=false;
+            setAudioIdleUI();
+            audioStatus.innerText='没有播放成功，请再点一次';
+          }
+        });
+
+        function enableAfterImage(){
+          if(sceneReady)return;
+          sceneReady=true;
+          totalStart=Date.now();
+          if(sceneHint)sceneHint.style.display='none';
+          setAudioIdleUI();
+        }
+
+        function attachImage(){
+          if(!sceneImg||sceneReady)return;
+
+          sceneImg.addEventListener('load',enableAfterImage,{once:true});
+          sceneImg.addEventListener('error',()=>{
+            if(sceneHint){
+              sceneHint.style.display='flex';
+              sceneHint.style.color='var(--warning)';
+              sceneHint.innerText='道路图片显示失败，请研究者刷新页面并重新完成资源准备。';
+            }
+            audioBtn.disabled=true;
+            console.error('Preloaded image display failed:',imagePath);
+          },{once:true});
+
+          if(sceneImg.complete&&sceneImg.naturalWidth>0) enableAfterImage();
+        }
+
+        attachImage();
+
+        options.forEach(btn=>btn.addEventListener('click',()=>{
+          const score=Number(btn.dataset.score);
+          if(phase===1) trustDraft=score;
+          else coopDraft=score;
+          setSelected(score);
+        }));
+
+        back.addEventListener('click',()=>{
+          if(phase!==2)return;
+          coopDraft=null;
+          backToQ1Count++;
+          phase=1;
+          q.innerText=q1;
+          progress.innerText='第 1 题 / 共 2 题';
+          anchors.innerHTML='<span>一点也不相信</span><span>非常相信</span>';
+          back.classList.add('hidden-visibility');
+          phaseStart=Date.now();
+          setSelected(trustDraft);
+          // 注意：这里只是在同一个驾驶 trial 内从合作题返回信任题，不停止语音。
+        });
+
+        confirm.addEventListener('click',()=>{
+          if(phase===1){
+            if(trustDraft===null)return;
+
+            trustScore=trustDraft;
+            trustRT=Date.now()-phaseStart;
+
+            phase=2;
+            q.innerText=q2;
+            progress.innerText='第 2 题 / 共 2 题';
+            anchors.innerHTML='<span>一点也不愿意</span><span>非常愿意</span>';
+            back.classList.remove('hidden-visibility');
+            phaseStart=Date.now();
+            setSelected(coopDraft);
+
+            // 同一个驾驶场景从信任题切换到合作题：音频不停止。
+          }else{
+            if(coopDraft===null)return;
+
+            coopScore=coopDraft;
+            coopRT=Date.now()-phaseStart;
+
+            const imageBase=String(trialData.image||'').replace(/\.[^.]+$/,'');
+            const imageNumber=(String(trialData.image||'').match(/(\d+)/)||[])[1]||'';
+
+            // 真正离开本驾驶 trial 之前停止本trial语音。
+            // 如果儿童正在重听，这一次会被立即截断，不会串到下一trial。
+            stopThisTrialAudio(true);
+
+            jsPsych.finishTrial({
+              Event_Type:isFormal?'Formal_Trial':'Practice_Trial',
+              Subject_ID:currentSubjectId,
+              Session_UUID:sessionUUID,
+              Age_Group:AGE_GROUP,
+              DataPipe_Condition:dataPipeCondition,
+              Version:currentVersion,
+              Sequence:SEQUENCE_NAME,
+              Rating_Format:RATING_FORMAT,
+
+              Formal_Trial_Order:isFormal?trialData.formalOrder:0,
+              Block:isFormal?trialData.block:0,
+              Block_Position:isFormal?trialData.blockPosition:0,
+
+              Image_Number:imageNumber,
+              Image_ID:imageBase,
+              Image_File:trialData.image,
+              Scene_ID:trialData.sceneId,
+              Scene_Name:trialData.sceneName,
+              Scene_Cue:trialData.sceneCue||'',
+              Risk_Level:isFormal?trialData.risk:'Practice',
+
+              Assistant_Label:isFormal?trialData.assistantLabel:'Practice',
+              Config_Code:trialData.config.code,
+              Config_Type:trialData.config.key,
+              Config_Name_CN:trialData.config.internalName,
+              Attribute_Dimension:trialData.config.dimension,
+              Attribute_Level:trialData.config.level,
+              Attribute_Level_Numeric:trialData.config.levelNumeric,
+              Manipulation_Text:trialData.manipulationText,
+
+              Audio_File:audioPath,
+              Audio_First_Play_RT_ms:audioFirstPlayRT,
+              Audio_Play_Count:audioPlayCount,
+              Audio_Replay_Count:Math.max(0,audioPlayCount-1),
+              Audio_Completed:audioCompleted,
+              Audio_Full_Play_Count:audioFullPlayCount,
+              Audio_Interrupted_On_Trial_End:audioInterruptedOnTrialEnd,
+              Audio_Total_Play_Time_ms:audioTotalPlayTime,
+
+              Trust_Score:trustScore,
+              Trust_RT_ms:trustRT,
+              Cooperation_Score:coopScore,
+              Cooperation_RT_ms:coopRT,
+              Back_to_Q1_Count:backToQ1Count,
+              Total_Trial_Time_ms:totalStart===null?null:Date.now()-totalStart,
+
+              Baseline_Ability_Points:baselineAbility,
+              Baseline_Emotion_Points:baselineEmotion,
+              Browser_Context:getBrowserContext(),
+              User_Agent:navigator.userAgent||'',
+              Image_Format:IMAGE_FORMAT
+            });
+          }
+        });
+      }
+    };
   }
+
+  window.addEventListener('pagehide',()=>{stopAnyActiveTrialAudio();});
 
   function getParticipantIdFromURL(){const params=new URLSearchParams(window.location.search);const pid=(params.get('pid')||'').trim().toUpperCase();return /^1B-[A-Z2-9]{6}$/.test(pid)?pid:'';}
   function applyParticipantIdFromURL(){const pid=getParticipantIdFromURL();if(!pid)return;const input=document.getElementById('subject-id-input');if(input){input.value=pid;input.readOnly=true;}const info=document.getElementById('login-info');if(info)info.innerHTML=`已从 start.html 自动带入实验编号：<b style="color:#fff;">${pid}</b><br><span style="font-size:13px;">请核对后点击进入实验。</span>`;}
@@ -1901,7 +2150,7 @@
       console.warn('儿童版测试模式：使用编号回退风险条件',dataPipeCondition);
     }
     riskGroup=dataPipeCondition===0?'Low':'High';
-    currentVersion=`Exp1b_Child_v7_DP${dataPipeCondition}_${riskGroup}_${SEQUENCE_NAME}`;
+    currentVersion=`Exp1b_Child_v9_DP${dataPipeCondition}_${riskGroup}_${SEQUENCE_NAME}`;
     jsPsych.data.addProperties({Subject_ID:currentSubjectId,Session_UUID:sessionUUID,Age_Group:AGE_GROUP,DataPipe_Condition:dataPipeCondition,Version:currentVersion,Sequence:SEQUENCE_NAME,Rating_Format:RATING_FORMAT,Risk_Level:riskGroup,Browser_Context:getBrowserContext(),User_Agent:navigator.userAgent||'',Image_Format:IMAGE_FORMAT});
     experimentStartedAtMs=Date.now();document.getElementById('login-screen').classList.add('hidden');document.getElementById('jspsych-target').innerHTML='';
 
