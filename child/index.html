@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-  <title>实验1b｜机器人驾车游戏（儿童版 v6）</title>
+  <title>实验1b｜机器人驾车游戏（儿童版 v7）</title>
 
   <!-- 与成人1b / 实验3a保持相同的本地 jsPsych 目录结构 -->
   <script src="../jspsych/jspsych.js"></script>
@@ -787,7 +787,7 @@
 
 
     /* =========================================================
-       v6 FINAL LAYOUT LAYER — iPad Air 4 landscape
+       v7 FINAL LAYOUT LAYER — iPad Air 4 landscape
        Key change: instruction pages NO LONGER reuse .fullscreen-container.
        Physical 2360×1640 px ≈ CSS 1180×820 px at DPR=2.
        ========================================================= */
@@ -969,7 +969,7 @@
   <div class="login-box">
     <div class="login-title">进入机器人驾车游戏</div>
     <div id="login-info" class="login-sub">请输入与前面问卷一致的匿名实验编号。这里不用填写姓名。</div>
-    <input id="subject-id-input" class="login-input" type="text" placeholder="实验编号" maxlength="30" autocomplete="off">
+    <input id="subject-id-input" class="login-input" type="text" placeholder="1B-XXXXXX" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false">
     <br>
     <button id="login-btn" class="login-btn">进入体验</button>
   </div>
@@ -978,7 +978,7 @@
 
 <script>
   /* =========================================================
-     实验1b 儿童版候选版 v6｜iPad Air 4 横屏结构修正版
+     实验1b 儿童版候选版 v7｜iPad Air 4 横屏结构 + UTF-8 BOM 修正版
      ---------------------------------------------------------
      核心框架：jsPsych
      推荐设备：平板横屏浏览器
@@ -1143,6 +1143,9 @@
     on_finish:async function(){
       finalizeExperimentTiming();
       const rawCleanCsv=buildCleanFormalCSV();
+      // DataPipe/OSF 中保存的 CSV 也加入 UTF-8 BOM。
+      // 这样 Windows Excel 直接双击打开时会按 UTF-8 识别中文，避免乱码。
+      const dataPipeCsv='\uFEFF'+rawCleanCsv;
       prepareLocalBackup(rawCleanCsv);
 
       if(!dataPipeConfigured()){
@@ -1157,8 +1160,8 @@
       document.getElementById('jspsych-target').innerHTML=`<div class="fullscreen-container"><div class="guide-box" style="text-align:center;max-width:760px;">
         <div class="guide-title">正在保存实验数据……</div><p>请先不要关闭页面。</p></div></div>`;
       try{
-        // DataPipe上传使用无BOM CSV；本地备份才添加BOM。
-        const upload=await uploadFinalDataToDataPipe(rawCleanCsv);
+        // DataPipe上传使用 UTF-8 BOM CSV；本地备份函数同样会添加一次 BOM。
+        const upload=await uploadFinalDataToDataPipe(dataPipeCsv);
         document.getElementById('jspsych-target').innerHTML=`<div class="fullscreen-container"><div class="guide-box" style="text-align:center;max-width:760px;">
           <div class="guide-title" style="color:var(--green);">✓ 全部完成啦</div>
           <p>谢谢你认真完成今天的乘车体验！</p><p style="color:#777;font-size:12px;">数据文件：${upload.filename}</p>
@@ -1849,8 +1852,8 @@
     }};
   }
 
-  function getParticipantIdFromURL(){const params=new URLSearchParams(window.location.search);const pid=(params.get('pid')||'').trim();return /^[A-Za-z0-9_-]{1,30}$/.test(pid)?pid:'';}
-  function applyParticipantIdFromURL(){const pid=getParticipantIdFromURL();if(!pid)return;const input=document.getElementById('subject-id-input');if(input){input.value=pid;input.readOnly=true;}const info=document.getElementById('login-info');if(info)info.innerHTML=`已识别实验编号：<b style="color:#fff;">${pid}</b><br><span style="font-size:13px;">请研究者确认后点击进入。</span>`;}
+  function getParticipantIdFromURL(){const params=new URLSearchParams(window.location.search);const pid=(params.get('pid')||'').trim().toUpperCase();return /^1B-[A-Z2-9]{6}$/.test(pid)?pid:'';}
+  function applyParticipantIdFromURL(){const pid=getParticipantIdFromURL();if(!pid)return;const input=document.getElementById('subject-id-input');if(input){input.value=pid;input.readOnly=true;}const info=document.getElementById('login-info');if(info)info.innerHTML=`已从 start.html 自动带入实验编号：<b style="color:#fff;">${pid}</b><br><span style="font-size:13px;">请核对后点击进入实验。</span>`;}
   applyParticipantIdFromURL();
   document.getElementById('login-btn').addEventListener('click',startExperiment);
   document.getElementById('preload-retry').addEventListener('click',retryFailedResources);
@@ -1888,8 +1891,8 @@
       return;
     }
     const inputVal=document.getElementById('subject-id-input').value.trim();
-    if(!inputVal||!/^[A-Za-z0-9_-]{1,30}$/.test(inputVal)){alert('请输入有效的实验编号。');return;}
-    currentSubjectId=inputVal;const btn=document.getElementById('login-btn'),old=btn.innerText;btn.disabled=true;btn.innerText='正在准备实验…';
+    if(!inputVal||!/^1B-[A-Z2-9]{6}$/.test(inputVal.toUpperCase())){alert('请输入正确的1B实验编号（格式：1B-XXXXXX）。');return;}
+    currentSubjectId=inputVal.toUpperCase();const btn=document.getElementById('login-btn'),old=btn.innerText;btn.disabled=true;btn.innerText='正在准备实验…';
 
     try{dataPipeCondition=await getDataPipeCondition();}
     catch(error){
@@ -1898,7 +1901,7 @@
       console.warn('儿童版测试模式：使用编号回退风险条件',dataPipeCondition);
     }
     riskGroup=dataPipeCondition===0?'Low':'High';
-    currentVersion=`Exp1b_Child_v6_DP${dataPipeCondition}_${riskGroup}_${SEQUENCE_NAME}`;
+    currentVersion=`Exp1b_Child_v7_DP${dataPipeCondition}_${riskGroup}_${SEQUENCE_NAME}`;
     jsPsych.data.addProperties({Subject_ID:currentSubjectId,Session_UUID:sessionUUID,Age_Group:AGE_GROUP,DataPipe_Condition:dataPipeCondition,Version:currentVersion,Sequence:SEQUENCE_NAME,Rating_Format:RATING_FORMAT,Risk_Level:riskGroup,Browser_Context:getBrowserContext(),User_Agent:navigator.userAgent||'',Image_Format:IMAGE_FORMAT});
     experimentStartedAtMs=Date.now();document.getElementById('login-screen').classList.add('hidden');document.getElementById('jspsych-target').innerHTML='';
 
