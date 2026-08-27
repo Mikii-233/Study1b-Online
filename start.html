@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>实验1b｜成人版开始页面</title>
+<style>
+:root{
+  --bg:#1e1e24;--card:#2b2b36;--line:#444854;--text:#f2f3f5;--muted:#aeb6c0;
+  --blue:#64b5f6;--green:#4caf50;--orange:#ffb74d;--deep:#23232b
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;min-height:100%;background:var(--bg);color:var(--text);
+  font-family:Arial,"Microsoft YaHei","PingFang SC",sans-serif;
+  -webkit-text-size-adjust:100%;text-size-adjust:100%;
+}
+html{scroll-behavior:smooth}
+body{
+  padding:max(14px,env(safe-area-inset-top)) 12px max(28px,env(safe-area-inset-bottom));
+  overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+.wrap{width:min(860px,100%);margin:auto}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:18px;margin-bottom:14px
+}
+h1{text-align:center;margin:2px 0 8px;font-size:clamp(26px,7vw,38px)}
+.subtitle{text-align:center;color:var(--muted);font-size:14px;line-height:1.6}
+.step{font-size:18px;font-weight:800;color:var(--blue);margin:16px 0 8px}
+.intro{font-size:15px;line-height:1.75;color:#d8dde3}
+.pidbox{
+  background:var(--deep);border:1px solid #525765;border-radius:14px;
+  padding:16px;margin-top:12px;text-align:center
+}
+.pidlabel{font-size:14px;color:var(--muted);margin-bottom:6px}
+#pid{
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:900;
+  font-size:clamp(26px,8vw,38px);letter-spacing:1.5px;color:#fff;user-select:text
+}
+.hint{margin-top:10px;color:var(--orange);font-size:14px;line-height:1.65}
+.btns{display:grid;gap:10px;margin-top:14px}
+button,a.btn{
+  width:100%;min-height:50px;border:0;border-radius:11px;font-size:17px;font-weight:800;
+  padding:12px 14px;text-align:center;text-decoration:none;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;touch-action:manipulation;font-family:inherit
+}
+.primary{background:var(--green);color:#fff}
+.secondary{background:#3a4250;color:#fff;border:1px solid #56606f}
+.ghost{background:transparent;color:#aeb6c0;border:1px solid #4a4f59}
+button:disabled{opacity:.42;cursor:not-allowed}
+.status{min-height:22px;text-align:center;color:#66d17a;font-size:14px;margin-top:8px}
+.qcard{padding:0;overflow:hidden}
+.qhead{padding:16px 18px 12px;border-bottom:1px solid var(--line)}
+.iframewrap{height:min(72vh,760px);min-height:520px;background:#fff}
+iframe{display:block;width:100%;height:100%;border:0;background:#fff}
+.fallback{
+  padding:12px 16px 16px;border-top:1px solid var(--line);
+  font-size:13px;line-height:1.65;color:var(--muted)
+}
+.confirm{display:flex;gap:10px;align-items:flex-start;line-height:1.65;font-size:15px}
+.confirm input{width:22px;height:22px;margin-top:2px;accent-color:var(--green);flex:0 0 22px}
+.note{
+  border-left:4px solid var(--orange);background:#3a3427;border-radius:8px;
+  padding:11px 12px;color:#f2e4c8;font-size:14px;line-height:1.65;margin-top:12px
+}
+.small{font-size:12px;color:#8d96a0;line-height:1.6;margin-top:10px}
+.flow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0 3px}
+.flow div{
+  border:1px solid #515866;border-radius:10px;background:#242630;padding:10px 8px;
+  text-align:center;font-size:14px;font-weight:800;color:#e9eef3
+}
+@media(min-width:700px){.btns.two{grid-template-columns:1fr 1fr}}
+@media(max-width:699px){
+  .flow{grid-template-columns:1fr}
+  .iframewrap{min-height:500px;height:72svh}
+}
+</style>
+</head>
+
+<body>
+<main class="wrap">
+
+<section class="card">
+  <h1>实验1b｜智能驾驶体验（成人版）</h1>
+  <div class="subtitle">请按照下面三个步骤依次完成。前测问卷与正式实验将通过同一个匿名实验编号进行匹配。</div>
+
+  <div class="flow">
+    <div>① 复制实验编号</div>
+    <div>② 完成前测问卷</div>
+    <div>③ 进入正式实验</div>
+  </div>
+
+  <div class="step">第 1 步｜复制实验编号</div>
+  <div class="intro">
+    系统已为您生成匿名实验编号。请点击“复制实验编号”，并将其粘贴到下方前测问卷中的“实验编号”一栏。
+  </div>
+
+  <div class="pidbox">
+    <div class="pidlabel">您的实验编号</div>
+    <div id="pid">生成中…</div>
+    <div class="hint">请勿修改该编号；前测问卷与正式实验必须使用完全相同的编号。</div>
+  </div>
+
+  <div class="btns two">
+    <button id="copy" class="primary" type="button">复制实验编号</button>
+    <button id="scroll" class="secondary" type="button">开始填写前测问卷</button>
+  </div>
+
+  <div id="copyStatus" class="status"></div>
+
+  <div class="note">
+    如果问卷中还需要填写手机号或微信号，可以照常填写；
+    <b>正式实验网页只保存匿名实验编号，不需要再次填写联系方式。</b>
+  </div>
+</section>
+
+<section id="questionnaire" class="card qcard">
+  <div class="qhead">
+    <div class="step" style="margin:0 0 6px">第 2 步｜完成前测问卷</div>
+    <div class="intro">请在问卷中粘贴上方实验编号，并完成全部题目后点击提交。</div>
+  </div>
+
+  <div class="iframewrap">
+    <iframe
+      src="https://v.wjx.cn/vm/P6G8Mar.aspx#"
+      title="实验1b成人版前测问卷"
+      loading="eager"
+      allow="clipboard-read; clipboard-write">
+    </iframe>
+  </div>
+
+  <div class="fallback">
+    如果当前浏览器中问卷区域无法正常显示，可以点击下面按钮单独打开问卷星。
+    完成后返回本页面即可，实验编号仍会保留。
+    <div class="btns">
+      <a class="btn secondary" href="https://v.wjx.cn/vm/P6G8Mar.aspx#" target="_blank" rel="noopener">单独打开问卷星</a>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="step" style="margin-top:0">第 3 步｜进入正式实验</div>
+  <div class="intro">
+    问卷提交成功后，请返回这里并勾选确认项。系统会把同一个实验编号自动带入正式实验页面，不需要再次输入。
+  </div>
+
+  <label class="confirm">
+    <input id="done" type="checkbox">
+    <span>我确认已经完成并提交前测问卷，且问卷中的实验编号与本页面显示一致。</span>
+  </label>
+
+  <div class="btns">
+    <button id="enter" class="primary" type="button" disabled>进入实验1b正式实验</button>
+  </div>
+
+  <div class="small">
+    为避免前测与正式实验无法匹配，请不要在完成前测后更换浏览器、清除网页数据，或手动修改地址栏中的 pid 参数。
+  </div>
+
+  <div class="btns">
+    <button id="newpid" class="ghost" type="button">仅在下一名参与者使用本设备时：生成新的实验编号</button>
+  </div>
+</section>
+
+</main>
+
+<script>
+const KEY='exp1b_adult_participant_id_v1';
+const PREFIX='1B-';
+const PID_PATTERN=/^1B-[A-Z2-9]{6}$/;
+const ALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+function randomChars(n){
+  const a=new Uint32Array(n);
+  if(window.crypto&&crypto.getRandomValues){
+    crypto.getRandomValues(a);
+  }else{
+    for(let i=0;i<n;i++) a[i]=Math.floor(Math.random()*1e9);
+  }
+  let s='';
+  for(let i=0;i<n;i++) s+=ALPH[a[i]%ALPH.length];
+  return s;
+}
+
+function makePid(){
+  return PREFIX+randomChars(6);
+}
+
+function getPid(){
+  let p=(localStorage.getItem(KEY)||'').trim().toUpperCase();
+  if(!PID_PATTERN.test(p)){
+    p=makePid();
+    localStorage.setItem(KEY,p);
+  }
+  return p;
+}
+
+let pid=getPid();
+const pidEl=document.getElementById('pid');
+const status=document.getElementById('copyStatus');
+const done=document.getElementById('done');
+const enter=document.getElementById('enter');
+
+function render(){
+  pidEl.textContent=pid;
+}
+
+async function copyPid(){
+  try{
+    await navigator.clipboard.writeText(pid);
+    status.textContent='已复制：'+pid;
+  }catch(e){
+    const t=document.createElement('textarea');
+    t.value=pid;
+    t.style.position='fixed';
+    t.style.left='-9999px';
+    t.style.opacity='0';
+    document.body.appendChild(t);
+    t.focus();
+    t.select();
+    try{
+      document.execCommand('copy');
+      status.textContent='已复制：'+pid;
+    }catch(_){
+      status.textContent='自动复制失败，请长按上方编号手动复制。';
+    }
+    t.remove();
+  }
+
+  setTimeout(()=>{
+    if(status.textContent.startsWith('已复制')) status.textContent='';
+  },3500);
+}
+
+document.getElementById('copy').addEventListener('click',copyPid);
+
+document.getElementById('scroll').addEventListener('click',async()=>{
+  await copyPid();
+  document.getElementById('questionnaire').scrollIntoView({behavior:'smooth',block:'start'});
+});
+
+done.addEventListener('change',()=>{
+  enter.disabled=!done.checked;
+});
+
+enter.addEventListener('click',()=>{
+  if(!done.checked) return;
+  location.href='index.html?pid='+encodeURIComponent(pid);
+});
+
+document.getElementById('newpid').addEventListener('click',()=>{
+  if(!confirm(
+    '只有在这台设备需要由另一位新参与者重新开始时才生成新编号。\n\n确定生成新的1B实验编号吗？'
+  )) return;
+
+  pid=makePid();
+  localStorage.setItem(KEY,pid);
+  done.checked=false;
+  enter.disabled=true;
+  status.textContent='已生成新的实验编号：'+pid;
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+render();
+</script>
+</body>
+</html>
