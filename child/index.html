@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-  <title>实验1b｜机器人驾车游戏（儿童版 v9）</title>
+  <title>实验1b｜机器人驾车游戏（儿童版 v10）</title>
 
   <!-- 与成人1b / 实验3a保持相同的本地 jsPsych 目录结构 -->
   <script src="../jspsych/jspsych.js"></script>
@@ -978,7 +978,7 @@
 
 <script>
   /* =========================================================
-     实验1b 儿童版候选版 v9｜精简数据导出 + 无限语音重复 + UTF-8 BOM
+     实验1b 儿童版 v10｜研究者口述优先 + 语音保留无限重复 + 双条件固定伪随机序列
      ---------------------------------------------------------
      核心框架：jsPsych
      推荐设备：平板横屏浏览器
@@ -1274,18 +1274,63 @@
     {scene:6,config:'HighEmotion'},{scene:2,config:'LowAbility'},{scene:4,config:'LowEmotion'},{scene:1,config:'HighAbility'}
   ];
   function validateFixedSequence(){
-    const errors=[];const counts={HighAbility:0,LowAbility:0,HighEmotion:0,LowEmotion:0};
-    const half=[{HighAbility:0,LowAbility:0,HighEmotion:0,LowEmotion:0},{HighAbility:0,LowAbility:0,HighEmotion:0,LowEmotion:0}];
-    const seen={1:new Set(),2:new Set(),3:new Set(),4:new Set(),5:new Set(),6:new Set()};
+    const errors=[];
+    const configs=['HighAbility','LowAbility','HighEmotion','LowEmotion'];
+    const counts={HighAbility:0,LowAbility:0,HighEmotion:0,LowEmotion:0};
+    const sceneCounts={1:0,2:0,3:0,4:0,5:0,6:0};
+    const half=[
+      {HighAbility:0,LowAbility:0,HighEmotion:0,LowEmotion:0},
+      {HighAbility:0,LowAbility:0,HighEmotion:0,LowEmotion:0}
+    ];
+    const pairCounts={};
+
+    if(FIXED_TRIAL_TEMPLATE.length!==24){
+      errors.push(`正式trial数量=${FIXED_TRIAL_TEMPLATE.length}，应为24`);
+    }
+
     FIXED_TRIAL_TEMPLATE.forEach((t,i)=>{
-      counts[t.config]++;half[i<12?0:1][t.config]++;seen[t.scene].add(t.config);
-      if(i>0&&FIXED_TRIAL_TEMPLATE[i-1].scene===t.scene) errors.push(`场景连续 ${i}/${i+1}`);
-      if(i>0&&FIXED_TRIAL_TEMPLATE[i-1].config===t.config) errors.push(`助手连续 ${i}/${i+1}`);
+      if(!SCENES[t.scene]) errors.push(`trial${i+1}场景编号无效:${t.scene}`);
+      if(!CONFIGS[t.config]) errors.push(`trial${i+1}助手条件无效:${t.config}`);
+
+      if(counts[t.config]!==undefined) counts[t.config]++;
+      if(sceneCounts[t.scene]!==undefined) sceneCounts[t.scene]++;
+      if(half[i<12?0:1][t.config]!==undefined) half[i<12?0:1][t.config]++;
+
+      const pairKey=`${t.scene}|${t.config}`;
+      pairCounts[pairKey]=(pairCounts[pairKey]||0)+1;
+
+      if(i>0&&FIXED_TRIAL_TEMPLATE[i-1].scene===t.scene){
+        errors.push(`相邻场景重复：trial ${i} 与 ${i+1}`);
+      }
+      if(i>0&&FIXED_TRIAL_TEMPLATE[i-1].config===t.config){
+        errors.push(`相邻助手重复：trial ${i} 与 ${i+1}`);
+      }
     });
-    Object.entries(counts).forEach(([k,v])=>{if(v!==6)errors.push(`${k}=${v}`);});
-    half.forEach((h,idx)=>Object.entries(h).forEach(([k,v])=>{if(v!==3)errors.push(`Half${idx+1} ${k}=${v}`);}));
-    Object.entries(seen).forEach(([s,set])=>{if(set.size!==4)errors.push(`Scene${s}未覆盖4条件`);});
-    if(errors.length) throw new Error('固定序列校验失败：'+errors.join('；'));
+
+    Object.entries(counts).forEach(([k,v])=>{
+      if(v!==6) errors.push(`${k}出现${v}次，应为6次`);
+    });
+
+    Object.entries(sceneCounts).forEach(([s,v])=>{
+      if(v!==4) errors.push(`Scene${s}出现${v}次，应为4次`);
+    });
+
+    half.forEach((h,idx)=>{
+      Object.entries(h).forEach(([k,v])=>{
+        if(v!==3) errors.push(`前后半程平衡失败：Half${idx+1} ${k}=${v}`);
+      });
+    });
+
+    for(let s=1;s<=6;s++){
+      configs.forEach(cfg=>{
+        const n=pairCounts[`${s}|${cfg}`]||0;
+        if(n!==1) errors.push(`Scene${s}×${cfg}出现${n}次，应为1次`);
+      });
+    }
+
+    if(errors.length){
+      throw new Error('固定伪随机序列校验失败：'+errors.join('；'));
+    }
   }
   validateFixedSequence();
 
@@ -1555,7 +1600,7 @@
         <div class="assistant-prompt-wrap">
           <div style="min-width:0;flex:1;">
             <div class="speech-bubble"><span class="prompt-inline-label">机器人说：</span>${t.manipulationText}</div>
-            <div id="audio-status" class="audio-status">请先听一听机器人司机怎么说</div>
+            <div id="audio-status" class="audio-status">&nbsp;</div>
           </div>
           <button id="audio-play-btn" class="audio-btn" type="button" disabled>🔊 听机器人说</button>
         </div>
@@ -1730,11 +1775,11 @@
           <div class="guide-title" style="margin-bottom:12px;">先练习两次</div>
           <div class="context-box" style="margin-bottom:10px;">
             每一次先看清楚道路，再看看现在的<span class="highlight">机器人司机</span>。
-            然后点一下<span class="highlight">🔊 听机器人说</span>，认真听完它说的话。
+            研究者会告诉你这位机器人司机是怎么说的，听清楚以后再按照自己的感觉回答。
           </div>
 
           <div class="child-tip" style="margin:9px 0;">
-            听完以后，会回答两道小问题。五个圆圈表示程度从少到多：
+            接下来会回答两道小问题。五个圆圈表示程度从少到多：
             <div class="scale-demo">
               <div class="scale-demo-circles">
                 ${[0,25,50,75,100].map(f=>`<div class="scale-demo-item"><span class="circle-scale" style="--fill:${f}%"></span></div>`).join('')}
@@ -1747,7 +1792,7 @@
           </div>
 
           <div style="font-size:16px;line-height:1.6;">
-            练习没有对错。如果没有听清楚，可以点<span class="highlight">“再听一次”</span>。
+            练习没有对错。如果还想再听一遍机器人说的话，也可以点击屏幕上的小喇叭。
           </div>
         </div>
         <div style="margin-top:13px;"><button id="practice-start" class="continue-btn">开始练习</button></div>
@@ -1775,12 +1820,12 @@
           <div style="font-size:16px;line-height:1.65;">
             ① 先看看现在的道路；<br>
             ② 看看机器人司机的绿色或橙色信息；<br>
-            ③ 点小喇叭，把机器人说的话听完；<br>
+            ③ 听研究者介绍这位机器人司机说的话；<br>
             ④ 按照自己的感觉回答两道问题。<br>
-            ⑤ 有些道路还会再出现，但机器人司机可能不同，每次都重新看、重新听。
+            ⑤ 有些道路还会再出现，但机器人司机可能不同，每次都重新看、重新判断。
           </div>
           <div style="margin-top:8px;color:var(--muted);font-size:14px;text-align:center;">
-            没有正确答案，说出你自己的想法就可以。
+            没有正确答案，说出你自己的想法就可以。需要时可以点击小喇叭再次播放机器人说的话。
           </div>
         </div>
         <div style="margin-top:13px;"><button id="formal-start" class="continue-btn">开始正式游戏</button></div>
@@ -1805,11 +1850,12 @@
   }
 
   // =========================================================
-  // v8 音频生命周期：
-  // 1) 每个驾驶 trial 只持有自己的一个 Audio 对象；
-  // 2) 同一 trial 内可无限次点击“重复播放”，不设置次数上限；
-  // 3) 切换到下一驾驶 trial 时，上一 trial 若仍在播放会立即停止；
-  // 4) 信任题 -> 合作题仍属于同一个 trial，因此不会中断音频。
+  // v10 音频生命周期（研究者口述优先）：
+  // 1) 场景准备好后立即允许评分，不再要求先播放或听完语音；
+  // 2) 每个驾驶 trial 只持有自己的一个 Audio 对象；
+  // 3) 同一 trial 内可无限次点击“重复播放”，不设置次数上限；
+  // 4) 切换到下一驾驶 trial 时，上一 trial 若仍在播放会立即停止；
+  // 5) 信任题 -> 合作题仍属于同一个 trial，因此不会中断音频。
   // =========================================================
   let activeTrialAudioStopper=null;
 
@@ -1884,12 +1930,10 @@
           audioBtn.innerText=audioCompleted?'🔊 重复播放':'🔊 听机器人说';
         }
 
-        function unlockRatingsAfterFirstFullPlay(){
+        function markAudioCompleted(){
           if(audioCompleted)return;
           audioCompleted=1;
-          phaseStart=Date.now();
-          options.forEach(btn=>btn.disabled=false);
-          audioStatus.innerText='听完啦，可以回答下面的问题；需要时可以一直点击“重复播放”';
+          audioStatus.innerHTML='&nbsp;';
         }
 
         function stopThisTrialAudio(markAsTrialEnd=false){
@@ -1917,7 +1961,7 @@
           closeCurrentAudioSegment();
           audioIsPlaying=false;
           audioFullPlayCount++;
-          unlockRatingsAfterFirstFullPlay();
+          markAudioCompleted();
           setAudioIdleUI();
         });
 
@@ -1936,7 +1980,7 @@
           audioBtn.classList.add('playing');
           audioBtn.innerText='正在播放…';
           audioStatus.style.color='';
-          audioStatus.innerText='请认真听完这位机器人司机说的话';
+          audioStatus.innerHTML='&nbsp;';
 
           const requestedAt=Date.now();
 
@@ -1967,8 +2011,11 @@
           if(sceneReady)return;
           sceneReady=true;
           totalStart=Date.now();
+          phaseStart=totalStart;
+          options.forEach(btn=>btn.disabled=false);
           if(sceneHint)sceneHint.style.display='none';
           setAudioIdleUI();
+          audioStatus.innerHTML='&nbsp;';
         }
 
         function attachImage(){
@@ -2150,7 +2197,7 @@
       console.warn('儿童版测试模式：使用编号回退风险条件',dataPipeCondition);
     }
     riskGroup=dataPipeCondition===0?'Low':'High';
-    currentVersion=`Exp1b_Child_v9_DP${dataPipeCondition}_${riskGroup}_${SEQUENCE_NAME}`;
+    currentVersion=`Exp1b_Child_v10_OralPrimary_DP${dataPipeCondition}_${riskGroup}_${SEQUENCE_NAME}`;
     jsPsych.data.addProperties({Subject_ID:currentSubjectId,Session_UUID:sessionUUID,Age_Group:AGE_GROUP,DataPipe_Condition:dataPipeCondition,Version:currentVersion,Sequence:SEQUENCE_NAME,Rating_Format:RATING_FORMAT,Risk_Level:riskGroup,Browser_Context:getBrowserContext(),User_Agent:navigator.userAgent||'',Image_Format:IMAGE_FORMAT});
     experimentStartedAtMs=Date.now();document.getElementById('login-screen').classList.add('hidden');document.getElementById('jspsych-target').innerHTML='';
 
